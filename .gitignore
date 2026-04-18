@@ -1,55 +1,52 @@
-# Prerequisites
-*.d
-
-# Object files
+# Build artifacts
 *.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
 *.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
-*.so.*
 *.dylib
-
-# Executables
+*.dll
 *.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+*.class
+src/embed_c
+src/embed_cpp
+src/actor_test
+src/actor_scale_test
+src/actor_stress_test
+src/api_stress_test
+src/clone_test
+src/fault_inject_test
+src/integration_test
+src/interop_test
+src/ref_test
+src/regex_thread_test
+src/state_switch_test
+src/cpp_embed_test
+src/event_processing
+src/cookbook/config
+src/cookbook/console
+src/cookbook/pipeline
+src/cookbook/plugin
+src/cookbook/repl_socket
+src/cookbook/rules
+use-cases/automation
+use-cases/configuration
+use-cases/console
+use-cases/data_pipeline
+use-cases/event_processing
+use-cases/game_scripting
+use-cases/plugins
+use-cases/rules_engine
+mino/src/core_mino.h
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# OS noise
+.DS_Store
+Thumbs.db
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Editor noise
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# debug information files
-*.dwo
+# Local working files
+.local/
