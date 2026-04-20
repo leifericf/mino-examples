@@ -7,7 +7,7 @@ CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 -Imino/src
 LDFLAGS  ?=
 LIBS     ?= -lm
 
-MINO_SRCS := mino/src/mino.c mino/src/eval_special.c \
+MINO_SRCS := mino/src/mino.c mino/src/diag.c mino/src/eval_special.c \
              mino/src/eval_special_defs.c mino/src/eval_special_bindings.c \
              mino/src/eval_special_control.c mino/src/eval_special_fn.c \
              mino/src/runtime_state.c mino/src/runtime_var.c \
@@ -19,7 +19,11 @@ MINO_SRCS := mino/src/mino.c mino/src/eval_special.c \
              mino/src/prim_reflection.c mino/src/prim_meta.c mino/src/prim_regex.c \
              mino/src/prim_stateful.c mino/src/prim_module.c \
              mino/src/prim_host.c mino/src/host_interop.c \
-             mino/src/clone.c mino/src/re.c
+             mino/src/clone.c mino/src/re.c \
+             mino/src/async_buffer.c mino/src/async_channel.c \
+             mino/src/async_handler.c mino/src/async_select.c \
+             mino/src/async_scheduler.c mino/src/async_timer.c \
+             mino/src/prim_async.c
 MINO_OBJS := $(MINO_SRCS:.c=.o)
 
 # C examples
