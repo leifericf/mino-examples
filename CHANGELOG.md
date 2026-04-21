@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Tracking mino v0.39.0 (task runner, `str-replace` primitive,
+  `file-mtime` primitive, Windows CI)
+
 ## v0.1.0
 
 Initial release. Extracted from the main mino repository.
