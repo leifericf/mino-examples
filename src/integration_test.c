@@ -2,7 +2,7 @@
  * integration_test.c -- end-to-end integration tests.
  * Tests feature interactions that unit tests can't catch:
  * GC + eval + closures + atoms, module loading + state, REPL + try/catch,
- * binding + actors, limits + lazy sequences, etc.
+ * limits + lazy sequences, etc.
  */
 
 #include "mino.h"
@@ -144,47 +144,6 @@ static void test_clone_isolation_deep(void)
 
     mino_env_free(src, se); mino_env_free(dst, de);
     mino_state_free(src); mino_state_free(dst);
-    OK();
-}
-
-/* Test: actor with eval + try/catch + binding interaction */
-static void test_actor_eval_with_exceptions(void)
-{
-    TEST("Actor: eval with try/catch handles errors correctly");
-    mino_state_t *host = mino_state_new();
-    mino_actor_t *a = mino_actor_new();
-    mino_state_t *as = mino_actor_state(a);
-    mino_env_t *ae = mino_actor_env(a);
-
-    /* Actor has a handler that can fail */
-    mino_eval_string(as,
-        "(defn handle (x)"
-        "  (try"
-        "    (if (= x 0) (throw \"zero!\") (* x x))"
-        "    (catch e (str \"error:\" e))))", ae);
-
-    /* Send valid messages */
-    mino_actor_send(a, host, mino_int(host, 5));
-    mino_val_t *msg = mino_actor_recv(a);
-    mino_env_set(as, ae, "__m", msg);
-    mino_val_t *r = mino_eval_string(as, "(handle __m)", ae);
-    CHK(r != NULL, "handle 5 failed");
-    long long v;
-    CHK(mino_to_int(r, &v) && v == 25, "5^2 should be 25");
-
-    /* Send error-triggering message */
-    mino_actor_send(a, host, mino_int(host, 0));
-    msg = mino_actor_recv(a);
-    mino_env_set(as, ae, "__m", msg);
-    r = mino_eval_string(as, "(handle __m)", ae);
-    CHK(r != NULL, "handle 0 failed");
-    const char *s;
-    size_t len;
-    CHK(mino_to_string(r, &s, &len), "not string");
-    CHK(strstr(s, "error:zero!") != NULL, "wrong error result");
-
-    mino_actor_free(a);
-    mino_state_free(host);
     OK();
 }
 
@@ -350,7 +309,6 @@ int main(void)
     test_repl_complex_session();
     test_limit_with_lazy();
     test_clone_isolation_deep();
-    test_actor_eval_with_exceptions();
     test_pcall_inside_eval();
     test_module_with_macros();
     test_gc_stress_integration();

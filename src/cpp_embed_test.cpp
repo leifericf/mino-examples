@@ -56,14 +56,6 @@ struct MiRef {
     mino_val_t *get() { return mino_deref(r); }
 };
 
-struct MiActor {
-    mino_actor_t *a;
-    MiActor() : a(mino_actor_new()) {}
-    ~MiActor() { mino_actor_free(a); }
-    MiActor(const MiActor&) = delete;
-    operator mino_actor_t*() { return a; }
-};
-
 /* --- Tests --- */
 
 static void test_raii_lifecycle(void)
@@ -240,163 +232,6 @@ static void test_exception_from_cpp(void)
     PASS();
 }
 
-/* --- Actor model: ping-pong --- */
-
-static void test_actor_ping_pong(void)
-{
-    TEST("Actor model: ping-pong message exchange");
-    MiState caller;
-    MiEnv caller_env(caller);
-    MiActor worker;
-
-    mino_state_t *ws = mino_actor_state(worker);
-    mino_env_t *we = mino_actor_env(worker);
-    mino_install_io(ws, we);
-
-    /* Define a handler in the worker that doubles received numbers */
-    mino_eval_string(ws,
-        "(defn handle (msg) (* msg 2))", we);
-
-    /* Send 5 messages, process each, collect results */
-    std::vector<long long> results;
-    for (int i = 1; i <= 5; i++) {
-        mino_actor_send(worker, caller, mino_int(caller, i));
-
-        /* Worker receives and processes */
-        mino_val_t *msg = mino_actor_recv(worker);
-        ASSERT(msg != nullptr, "recv null");
-
-        mino_env_set(ws, we, "__msg", msg);
-        mino_val_t *result = mino_eval_string(ws, "(handle __msg)", we);
-        ASSERT(result != nullptr, "handle failed");
-
-        long long val;
-        ASSERT(mino_to_int(result, &val), "not int");
-        results.push_back(val);
-    }
-
-    ASSERT(results.size() == 5, "wrong count");
-    ASSERT(results[0] == 2 && results[1] == 4 && results[2] == 6
-        && results[3] == 8 && results[4] == 10, "wrong values");
-    PASS();
-}
-
-/* --- Actor model: pipeline --- */
-
-static void test_actor_pipeline(void)
-{
-    TEST("Actor model: 3-stage processing pipeline");
-    MiState host;
-    MiEnv host_env(host);
-
-    /* Stage 1: increment */
-    MiActor stage1;
-    mino_eval_string(mino_actor_state(stage1),
-        "(defn process (x) (+ x 1))", mino_actor_env(stage1));
-
-    /* Stage 2: double */
-    MiActor stage2;
-    mino_eval_string(mino_actor_state(stage2),
-        "(defn process (x) (* x 2))", mino_actor_env(stage2));
-
-    /* Stage 3: to string */
-    MiActor stage3;
-    mino_eval_string(mino_actor_state(stage3),
-        "(defn process (x) (str \"result:\" x))", mino_actor_env(stage3));
-
-    /* Push value 10 through the pipeline */
-    mino_val_t *val = mino_int(host, 10);
-
-    /* Stage 1 */
-    mino_actor_send(stage1, host, val);
-    mino_val_t *msg = mino_actor_recv(stage1);
-    mino_env_set(mino_actor_state(stage1), mino_actor_env(stage1), "__m", msg);
-    val = mino_eval_string(mino_actor_state(stage1), "(process __m)",
-                           mino_actor_env(stage1));
-    ASSERT(val != nullptr, "stage1 failed");
-
-    /* Stage 2 -- clone from stage1's state to stage2's */
-    mino_val_t *cloned = mino_clone(mino_actor_state(stage2),
-                                     mino_actor_state(stage1), val);
-    ASSERT(cloned != nullptr, "clone 1->2 failed");
-    mino_env_set(mino_actor_state(stage2), mino_actor_env(stage2), "__m", cloned);
-    val = mino_eval_string(mino_actor_state(stage2), "(process __m)",
-                           mino_actor_env(stage2));
-    ASSERT(val != nullptr, "stage2 failed");
-
-    /* Stage 3 -- clone from stage2 to stage3 */
-    cloned = mino_clone(mino_actor_state(stage3),
-                         mino_actor_state(stage2), val);
-    ASSERT(cloned != nullptr, "clone 2->3 failed");
-    mino_env_set(mino_actor_state(stage3), mino_actor_env(stage3), "__m", cloned);
-    val = mino_eval_string(mino_actor_state(stage3), "(process __m)",
-                           mino_actor_env(stage3));
-    ASSERT(val != nullptr, "stage3 failed");
-
-    const char *str;
-    size_t len;
-    ASSERT(mino_to_string(val, &str, &len), "to_string failed");
-    /* 10 -> (+1) -> 11 -> (*2) -> 22 -> str -> "result:22" */
-    ASSERT(strcmp(str, "result:22") == 0, "wrong pipeline result");
-    PASS();
-}
-
-/* --- Actor model: supervisor pattern --- */
-
-static void test_actor_supervisor(void)
-{
-    TEST("Actor model: supervisor restarts failed actor");
-    MiState host;
-    MiEnv host_env(host);
-
-    auto make_worker = []() -> mino_actor_t* {
-        mino_actor_t *a = mino_actor_new();
-        mino_eval_string(mino_actor_state(a),
-            "(defn handle (x) (if (= x 0) (throw \"crash!\") (* x x)))",
-            mino_actor_env(a));
-        return a;
-    };
-
-    mino_actor_t *worker = make_worker();
-    std::vector<std::string> results;
-
-    int inputs[] = {3, 4, 0, 5};  /* 0 will crash */
-    for (int i = 0; i < 4; i++) {
-        mino_actor_send(worker, host, mino_int(host, inputs[i]));
-        mino_val_t *msg = mino_actor_recv(worker);
-
-        mino_state_t *ws = mino_actor_state(worker);
-        mino_env_t *we = mino_actor_env(worker);
-        mino_env_set(ws, we, "__m", msg);
-
-        mino_val_t *out = nullptr;
-        mino_val_t *fn = mino_env_get(we, "handle");
-        int rc = mino_pcall(ws, fn, mino_cons(ws, msg, mino_nil(ws)), we, &out);
-
-        if (rc == 0) {
-            char buf[64];
-            long long val;
-            mino_to_int(out, &val);
-            snprintf(buf, sizeof(buf), "ok:%lld", val);
-            results.push_back(buf);
-        } else {
-            results.push_back("restarted");
-            /* Supervisor restarts the actor */
-            mino_actor_free(worker);
-            worker = make_worker();
-        }
-    }
-
-    mino_actor_free(worker);
-
-    ASSERT(results.size() == 4, "wrong count");
-    ASSERT(results[0] == "ok:9", "wrong r0");
-    ASSERT(results[1] == "ok:16", "wrong r1");
-    ASSERT(results[2] == "restarted", "should restart");
-    ASSERT(results[3] == "ok:25", "wrong r3");
-    PASS();
-}
-
 /* --- Sandboxed eval with limits --- */
 
 static void test_sandboxed_untrusted_code(void)
@@ -480,9 +315,6 @@ int main()
     test_cpp_closure_as_primitive();
     test_cpp_map_interop();
     test_exception_from_cpp();
-    test_actor_ping_pong();
-    test_actor_pipeline();
-    test_actor_supervisor();
     test_sandboxed_untrusted_code();
     test_handle_cpp_destructor();
 

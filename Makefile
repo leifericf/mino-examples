@@ -25,15 +25,12 @@ MINO_SRCS := mino/src/mino.c mino/src/diag.c mino/src/eval_special.c \
              mino/src/prim_fs.c mino/src/prim_proc.c \
              mino/src/prim_host.c mino/src/host_interop.c \
              mino/src/clone.c mino/src/re.c \
-             mino/src/async_buffer.c mino/src/async_channel.c \
-             mino/src/async_handler.c mino/src/async_select.c \
              mino/src/async_scheduler.c mino/src/async_timer.c \
              mino/src/prim_async.c
 MINO_OBJS := $(MINO_SRCS:.c=.o)
 
 # C examples
-C_SRCS := src/actor_test.c src/actor_scale_test.c src/actor_stress_test.c \
-          src/api_stress_test.c src/clone_test.c src/integration_test.c \
+C_SRCS := src/api_stress_test.c src/clone_test.c src/integration_test.c \
           src/interop_test.c src/ref_test.c src/state_switch_test.c \
           src/fault_inject_test.c
 C_BINS := $(C_SRCS:.c=) src/embed_c

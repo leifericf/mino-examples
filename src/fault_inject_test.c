@@ -239,45 +239,6 @@ static void test_clone_map_oom(void)
     OK();
 }
 
-/* Test: OOM during mailbox serialization via raw fault injection. */
-static void test_mailbox_send_oom(void)
-{
-    TEST("mailbox send OOM returns error, not crash");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
-    mino_mailbox_t *mb = mino_mailbox_new();
-    long n;
-    int rc;
-
-    mino_val_t *v = mino_eval_string(S, "{:a [1 2 3] :b \"hello\"}", env);
-    CHK(v != NULL, "eval failed");
-    CHK(mb != NULL, "mailbox alloc failed");
-
-    /* Find failure point in serialization path. */
-    for (n = 1; n <= 50; n++) {
-        mino_set_fail_raw_at(S, n);
-        rc = mino_mailbox_send(mb, S, v);
-        mino_set_fail_raw_at(S, 0);
-        if (rc != 0) break;
-    }
-    CHK(n <= 50, "no failure point found");
-
-    /* Verify recovery: send succeeds after clearing injection. */
-    rc = mino_mailbox_send(mb, S, v);
-    CHK(rc == 0, "send should succeed after clearing injection");
-
-    /* Verify the message arrived intact. */
-    {
-        mino_val_t *msg = mino_mailbox_recv(mb, S);
-        CHK(msg != NULL, "recv should return the sent value");
-    }
-
-    mino_mailbox_free(mb);
-    mino_env_free(S, env);
-    mino_state_free(S);
-    OK();
-}
-
 /* Test: repeated OOM + recovery cycles don't leak or corrupt state. */
 static void test_repeated_oom_recovery(void)
 {
@@ -314,7 +275,6 @@ int main(void)
     test_oom_catchable();
     test_clone_vector_oom();
     test_clone_map_oom();
-    test_mailbox_send_oom();
     test_repeated_oom_recovery();
 
     printf("---------------------\n");

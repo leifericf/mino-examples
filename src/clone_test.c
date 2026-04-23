@@ -105,55 +105,7 @@ int main(void)
         ASSERT(dst->type == MINO_CONS, "nested clone type");
     }
 
-    /* ---- Test 7: mailbox send/recv ---- */
-    {
-        mino_mailbox_t *mb = mino_mailbox_new();
-        mino_val_t *sent, *got;
-        int rc;
-
-        ASSERT(mb != NULL, "mailbox new");
-
-        /* Empty recv returns NULL. */
-        got = mino_mailbox_recv(mb, B);
-        ASSERT(got == NULL, "empty recv");
-
-        /* Send from A, receive into B. */
-        sent = mino_eval_string(A, "[1 2 3]", ea);
-        ASSERT(sent != NULL, "eval send val");
-        rc = mino_mailbox_send(mb, A, sent);
-        ASSERT(rc == 0, "send ok");
-
-        got = mino_mailbox_recv(mb, B);
-        ASSERT(got != NULL, "recv not null");
-        ASSERT(got->type == MINO_VECTOR, "recv type");
-        ASSERT(got->as.vec.len == 3, "recv len");
-
-        /* Queue is now empty again. */
-        got = mino_mailbox_recv(mb, B);
-        ASSERT(got == NULL, "empty after drain");
-
-        mino_mailbox_free(mb);
-    }
-
-    /* ---- Test 8: mailbox multiple messages ---- */
-    {
-        mino_mailbox_t *mb = mino_mailbox_new();
-        int rc, i;
-
-        for (i = 0; i < 5; i++) {
-            rc = mino_mailbox_send(mb, A, mino_int(A, (long long)i));
-            ASSERT(rc == 0, "multi send");
-        }
-        for (i = 0; i < 5; i++) {
-            mino_val_t *got = mino_mailbox_recv(mb, B);
-            ASSERT(got != NULL, "multi recv not null");
-            ASSERT(got->type == MINO_INT && got->as.i == i, "multi recv val");
-        }
-
-        mino_mailbox_free(mb);
-    }
-
-    /* ---- Test 9: isolation - mutating in A doesn't affect B's clone ---- */
+    /* ---- Test 7: isolation - mutating in A doesn't affect B's clone ---- */
     {
         mino_val_t *atom_v = mino_eval_string(A,
             "(let (a (atom 0)) (reset! a 42) (deref a))", ea);
@@ -170,6 +122,6 @@ int main(void)
     mino_state_free(A);
     mino_state_free(B);
 
-    printf("all clone/mailbox tests passed\n");
+    printf("all clone tests passed\n");
     return 0;
 }

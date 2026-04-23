@@ -499,113 +499,6 @@ static void test_pcall_error(void)
     PASS();
 }
 
-/* --- Mailbox stress --- */
-
-static void test_mailbox_many_messages(void)
-{
-    TEST("mailbox handles 1000 messages");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_new(s1);
-    mino_mailbox_t *mb = mino_mailbox_new();
-
-    int i;
-    for (i = 0; i < 1000; i++) {
-        mino_val_t *v = mino_int(s1, (long long)i);
-        int rc = mino_mailbox_send(mb, s1, v);
-        ASSERT(rc == 0, "send failed");
-    }
-
-    for (i = 0; i < 1000; i++) {
-        mino_val_t *v = mino_mailbox_recv(mb, s2);
-        ASSERT(v != NULL, "recv returned NULL");
-        long long val;
-        ASSERT(mino_to_int(v, &val), "not an int");
-        ASSERT(val == (long long)i, "wrong value");
-    }
-
-    /* Mailbox should be empty. */
-    ASSERT(mino_mailbox_recv(mb, s2) == NULL, "should be empty");
-
-    mino_mailbox_free(mb);
-    mino_env_free(s1, e1);
-    mino_state_free(s1);
-    mino_state_free(s2);
-    PASS();
-}
-
-static void test_mailbox_complex_values(void)
-{
-    TEST("mailbox serializes complex nested values");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_new(s1);
-    mino_env_t *e2 = mino_new(s2);
-    mino_mailbox_t *mb = mino_mailbox_new();
-
-    mino_val_t *v = mino_eval_string(s1,
-        "{:name \"test\" :data [1 2 [3 4]] :meta {:nested true}}", e1);
-    ASSERT(v != NULL, "eval failed");
-
-    int rc = mino_mailbox_send(mb, s1, v);
-    ASSERT(rc == 0, "send failed");
-
-    mino_val_t *received = mino_mailbox_recv(mb, s2);
-    ASSERT(received != NULL, "recv returned NULL");
-    ASSERT(received->type == MINO_MAP, "not a map");
-
-    /* Verify the received map has the right structure. */
-    mino_val_t *name_key = mino_keyword(s2, "name");
-    mino_val_t *name_val = mino_eval_string(s2, "(get m :name)",  e2);
-    (void)name_key;
-    (void)name_val;
-    /* Just check it's a map with 3 keys. */
-    ASSERT(received->as.map.len == 3, "wrong number of keys");
-
-    mino_mailbox_free(mb);
-    mino_env_free(s1, e1);
-    mino_env_free(s2, e2);
-    mino_state_free(s1);
-    mino_state_free(s2);
-    PASS();
-}
-
-/* --- Actor --- */
-
-static void test_actor_lifecycle(void)
-{
-    TEST("actor create, eval, send, recv, free");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
-
-    mino_actor_t *a = mino_actor_new();
-    ASSERT(a != NULL, "actor_new failed");
-
-    mino_state_t *as = mino_actor_state(a);
-    mino_env_t *ae = mino_actor_env(a);
-    ASSERT(as != NULL, "actor state NULL");
-    ASSERT(ae != NULL, "actor env NULL");
-
-    /* Eval something in the actor. */
-    mino_val_t *r = mino_eval_string(as, "(def greeting \"hello\")", ae);
-    ASSERT(r != NULL, "actor eval failed");
-
-    /* Send a message from caller to actor. */
-    mino_actor_send(a, S, mino_int(S, 42));
-
-    /* Receive it. */
-    mino_val_t *msg = mino_actor_recv(a);
-    ASSERT(msg != NULL, "recv returned NULL");
-    long long val;
-    ASSERT(mino_to_int(msg, &val), "not an int");
-    ASSERT(val == 42, "expected 42");
-
-    mino_actor_free(a);
-    mino_env_free(S, env);
-    mino_state_free(S);
-    PASS();
-}
-
 /* --- Custom primitive --- */
 
 static mino_val_t *prim_double(mino_state_t *S, mino_val_t *args, mino_env_t *env)
@@ -822,9 +715,6 @@ int main(void)
     test_atom_api();
     test_pcall_success();
     test_pcall_error();
-    test_mailbox_many_messages();
-    test_mailbox_complex_values();
-    test_actor_lifecycle();
     test_custom_primitive();
     test_reader_edge_cases();
     test_predicate_matrix();
