@@ -14,7 +14,8 @@ MINO_SRCS := mino/src/mino.c mino/src/diag.c mino/src/eval_special.c \
              mino/src/runtime_error.c mino/src/runtime_env.c \
              mino/src/runtime_gc.c mino/src/runtime_gc_roots.c \
              mino/src/runtime_gc_major.c mino/src/runtime_gc_barrier.c \
-             mino/src/runtime_gc_minor.c mino/src/public_gc.c \
+             mino/src/runtime_gc_minor.c mino/src/runtime_gc_trace.c \
+             mino/src/public_gc.c mino/src/public_embed.c \
              mino/src/val.c mino/src/vec.c mino/src/map.c mino/src/rbtree.c \
              mino/src/read.c mino/src/print.c \
              mino/src/prim.c mino/src/prim_numeric.c mino/src/prim_collections.c \
@@ -24,7 +25,7 @@ MINO_SRCS := mino/src/mino.c mino/src/diag.c mino/src/eval_special.c \
              mino/src/prim_stateful.c mino/src/prim_module.c \
              mino/src/prim_fs.c mino/src/prim_proc.c \
              mino/src/prim_host.c mino/src/host_interop.c \
-             mino/src/clone.c mino/src/re.c \
+             mino/src/clone.c mino/src/re.c mino/src/transient.c \
              mino/src/async_scheduler.c mino/src/async_timer.c \
              mino/src/prim_async.c
 MINO_OBJS := $(MINO_SRCS:.c=.o)
