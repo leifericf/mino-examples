@@ -1,5 +1,5 @@
 /*
- * configuration.cpp — sandboxed configuration with computed values.
+ * configuration.cpp - sandboxed configuration with computed values.
  *
  * A build system loads its configuration from a mino script. The script
  * can reference host-provided environment values (platform, build mode)

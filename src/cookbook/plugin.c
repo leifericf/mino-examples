@@ -1,5 +1,5 @@
 /*
- * plugin.c — a plugin host that loads .mino files and calls into them.
+ * plugin.c - a plugin host that loads .mino files and calls into them.
  *
  * Demonstrates: module loading, calling mino functions from C with
  * mino_call, the resolver callback, sandboxed vs full environments.
@@ -111,7 +111,7 @@ int main(void)
         }
     }
 
-    /* Demonstrate protected call — catches errors gracefully. */
+    /* Demonstrate protected call - catches errors gracefully. */
     {
         mino_val_t *fn  = mino_env_get(env, "square");
         mino_val_t *bad = mino_cons(S, mino_string(S, "oops"), mino_nil(S));

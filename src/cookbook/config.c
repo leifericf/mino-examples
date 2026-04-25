@@ -1,5 +1,5 @@
 /*
- * config.c — load structured configuration from a .mino file.
+ * config.c - load structured configuration from a .mino file.
  *
  * Demonstrates: sandboxed eval (no I/O), extracting C values from a map,
  * using keywords as config keys.
@@ -36,7 +36,7 @@ int main(void)
     mino_val_t *cfg;
     mino_val_t *val;
 
-    /* Core bindings only — no I/O. The config file cannot read files,
+    /* Core bindings only - no I/O. The config file cannot read files,
      * print, or access the network. */
     mino_install_core(S, env);
 

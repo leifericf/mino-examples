@@ -1,8 +1,21 @@
 /*
- * embed.cpp — C++ host interop with mino.
+ * embed.cpp -- C++ host interop with mino.
  *
- * Build:
- *   c++ -std=c++17 -Isrc -o embed examples/embed.cpp src/*.c -lm
+ * Build (run from the mino-examples root, with the mino source
+ * tree available as a sibling at ../mino):
+ *
+ *   c++ -std=c++17 -O2 \
+ *     -I../mino/src -I../mino/src/public -I../mino/src/runtime \
+ *     -I../mino/src/gc -I../mino/src/eval -I../mino/src/collections \
+ *     -I../mino/src/prim -I../mino/src/async -I../mino/src/interop \
+ *     -I../mino/src/diag -I../mino/src/vendor/imath \
+ *     -o embed src/embed.cpp \
+ *     ../mino/src/public/*.c ../mino/src/runtime/*.c \
+ *     ../mino/src/gc/*.c ../mino/src/eval/*.c \
+ *     ../mino/src/collections/*.c ../mino/src/prim/*.c \
+ *     ../mino/src/async/*.c ../mino/src/interop/*.c \
+ *     ../mino/src/regex/*.c ../mino/src/diag/*.c \
+ *     ../mino/src/vendor/imath/*.c -lm
  */
 
 #include "mino.h"

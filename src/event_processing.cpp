@@ -1,5 +1,5 @@
 /*
- * event_processing.cpp — event processing example.
+ * event_processing.cpp - event processing example.
  *
  * C++ owns the event source (parsing, I/O, buffering).
  * mino scripts define the processing rules (filtering, grouping,

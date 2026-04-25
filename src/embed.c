@@ -1,5 +1,5 @@
 /*
- * embed.c — minimal embedding example for mino.
+ * embed.c - minimal embedding example for mino.
  *
  * Demonstrates: creating a runtime, registering a host function,
  * evaluating mino code, and extracting C values from the result.

@@ -1,5 +1,5 @@
 /*
- * event_processing.cpp — filter, group, and aggregate event streams.
+ * event_processing.cpp - filter, group, and aggregate event streams.
  *
  * C++ owns the event source (parsing, I/O, buffering). The mino
  * script defines processing rules using persistent data structures.

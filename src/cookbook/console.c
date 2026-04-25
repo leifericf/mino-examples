@@ -1,5 +1,5 @@
 /*
- * console.c — game scripting console.
+ * console.c - game scripting console.
  *
  * Demonstrates: mutable host state exposed through handles and host
  * functions, execution limits to prevent runaway scripts, the REPL

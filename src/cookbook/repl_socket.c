@@ -1,5 +1,5 @@
 /*
- * repl_socket.c — a REPL served over a TCP socket.
+ * repl_socket.c - a REPL served over a TCP socket.
  *
  * Demonstrates: the in-process REPL handle (mino_repl_*), I/O opt-in,
  * hosting a REPL from an event loop without threads.

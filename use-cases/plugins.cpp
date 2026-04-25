@@ -1,5 +1,5 @@
 /*
- * plugins.cpp — load user scripts with controlled capabilities.
+ * plugins.cpp - load user scripts with controlled capabilities.
  *
  * A document processing system where C++ provides the document model
  * and plugins define transformation rules. Each plugin runs in its

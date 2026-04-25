@@ -1,5 +1,5 @@
 /*
- * pipeline.c — transform data through mino expressions.
+ * pipeline.c - transform data through mino expressions.
  *
  * Demonstrates: pushing C data into mino as vectors/maps, running
  * sequence operations, extracting transformed results back to C.

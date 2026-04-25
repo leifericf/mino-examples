@@ -1,5 +1,5 @@
 /*
- * data_pipeline.cpp — transform host data through mino pipelines.
+ * data_pipeline.cpp - transform host data through mino pipelines.
  *
  * A metrics collector pushes timestamped measurements into mino.
  * The script defines transformation rules using threading macros

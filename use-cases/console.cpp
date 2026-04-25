@@ -1,5 +1,5 @@
 /*
- * console.cpp — in-app scripting console.
+ * console.cpp - in-app scripting console.
  *
  * An application embeds a command console where users type mino
  * expressions to inspect and control the running system. The host

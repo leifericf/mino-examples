@@ -1,5 +1,5 @@
 /*
- * game_scripting.cpp — entity system with scripted behaviors.
+ * game_scripting.cpp - entity system with scripted behaviors.
  *
  * A game engine exposes its entity system through typed handles.
  * Scripts define behaviors, queries, and commands. Step limits

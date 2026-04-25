@@ -1,5 +1,5 @@
 /*
- * automation.cpp — user-defined workflows over host APIs.
+ * automation.cpp - user-defined workflows over host APIs.
  *
  * A task automation system where C++ provides task primitives
  * (create, run, check status) and mino scripts define workflows

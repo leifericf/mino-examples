@@ -1,5 +1,5 @@
 /*
- * rules_engine.cpp — declarative business rules over host data.
+ * rules_engine.cpp - declarative business rules over host data.
  *
  * A loan approval system where C++ owns the applicant database and
  * mino scripts define the underwriting rules. Rules are pure functions

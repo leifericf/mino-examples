@@ -1,5 +1,5 @@
 /*
- * rules.c — a tiny rules engine driven by mino expressions.
+ * rules.c - a tiny rules engine driven by mino expressions.
  *
  * Demonstrates: registering host functions, evaluating user-defined
  * predicates, using mino as a decision layer between C data and actions.
