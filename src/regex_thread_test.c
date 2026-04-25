@@ -6,7 +6,7 @@
  * Requires pthreads (POSIX).
  */
 
-#include "re.h"
+#include "regex/re.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>

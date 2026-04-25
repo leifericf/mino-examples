@@ -5,39 +5,23 @@ CXX      ?= c++
 MINO_INCS := -Imino/src -Imino/src/public -Imino/src/runtime \
              -Imino/src/gc -Imino/src/eval -Imino/src/collections \
              -Imino/src/prim -Imino/src/async -Imino/src/interop \
-             -Imino/src/regex -Imino/src/diag -Imino/src/vendor/imath
+             -Imino/src/diag -Imino/src/vendor/imath
 CFLAGS   ?= -std=c99 -Wall -Wpedantic -Wextra -O2 $(MINO_INCS)
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 $(MINO_INCS)
 LDFLAGS  ?=
 LIBS     ?= -lm
 
-MINO_SRCS := mino/src/eval/mino.c mino/src/diag/diag.c mino/src/eval/eval_special.c \
-             mino/src/eval/eval_special_defs.c mino/src/eval/eval_special_bindings.c \
-             mino/src/eval/eval_special_control.c mino/src/eval/eval_special_fn.c \
-             mino/src/runtime/runtime_state.c mino/src/runtime/runtime_var.c \
-             mino/src/runtime/runtime_error.c mino/src/runtime/runtime_env.c \
-             mino/src/gc/runtime_gc.c mino/src/gc/runtime_gc_roots.c \
-             mino/src/gc/runtime_gc_major.c mino/src/gc/runtime_gc_barrier.c \
-             mino/src/gc/runtime_gc_minor.c mino/src/gc/runtime_gc_trace.c \
-             mino/src/runtime/runtime_module.c \
-             mino/src/public/public_gc.c mino/src/public/public_embed.c \
-             mino/src/collections/val.c mino/src/collections/vec.c \
-             mino/src/collections/map.c mino/src/collections/rbtree.c \
-             mino/src/eval/read.c mino/src/eval/print.c \
-             mino/src/prim/prim.c mino/src/prim/prim_numeric.c \
-             mino/src/prim/prim_bignum.c mino/src/vendor/imath/imath.c \
-             mino/src/prim/prim_collections.c \
-             mino/src/prim/prim_sequences.c mino/src/prim/prim_lazy.c \
-             mino/src/prim/prim_string.c mino/src/prim/prim_io.c \
-             mino/src/prim/prim_reflection.c mino/src/prim/prim_meta.c \
-             mino/src/prim/prim_regex.c \
-             mino/src/prim/prim_stateful.c mino/src/prim/prim_module.c \
-             mino/src/prim/prim_fs.c mino/src/prim/prim_proc.c \
-             mino/src/prim/prim_host.c mino/src/interop/host_interop.c \
-             mino/src/collections/clone.c mino/src/regex/re.c \
-             mino/src/collections/transient.c \
-             mino/src/async/async_scheduler.c mino/src/async/async_timer.c \
-             mino/src/prim/prim_async.c
+MINO_SRCS := $(wildcard mino/src/public/*.c) \
+             $(wildcard mino/src/runtime/*.c) \
+             $(wildcard mino/src/gc/*.c) \
+             $(wildcard mino/src/eval/*.c) \
+             $(wildcard mino/src/collections/*.c) \
+             $(wildcard mino/src/prim/*.c) \
+             $(wildcard mino/src/async/*.c) \
+             $(wildcard mino/src/interop/*.c) \
+             $(wildcard mino/src/regex/*.c) \
+             $(wildcard mino/src/diag/*.c) \
+             $(wildcard mino/src/vendor/imath/*.c)
 MINO_OBJS := $(MINO_SRCS:.c=.o)
 
 # C examples
@@ -74,7 +58,7 @@ mino/src/core_mino.h: mino/src/core.mino
 	@sed 's/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$$/\\n"/' $< >> $@
 	@printf '    ;\n' >> $@
 
-mino/src/prim/prim.o: mino/src/prim/prim.c mino/src/core_mino.h
+mino/src/prim/install.o: mino/src/prim/install.c mino/src/core_mino.h
 
 # --- Build rules ---
 
