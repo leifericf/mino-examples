@@ -1,5 +1,5 @@
 /*
- * config.c - load structured configuration from a .mino file.
+ * config.c - load structured configuration from a .clj file.
  *
  * Demonstrates: sandboxed eval (no I/O), extracting C values from a map,
  * using keywords as config keys.
@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 /*
- * A .mino config file is just a map literal:
+ * A .clj config file is just a map literal:
  *
  *   {:port 8080
  *    :host "0.0.0.0"

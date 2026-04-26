@@ -200,7 +200,7 @@ static void test_module_with_macros(void)
     mino_env_t *env = mino_new(S);
 
     /* Write a module that defines a macro */
-    FILE *f = fopen("/tmp/mino_macro_mod.mino", "w");
+    FILE *f = fopen("/tmp/mino_macro_mod.clj", "w");
     fprintf(f, "(defmacro unless (test & body)\n"
                "  `(if (not ~test) (do ~@body)))\n"
                "(def MOD_LOADED true)\n");
@@ -208,7 +208,7 @@ static void test_module_with_macros(void)
 
     mino_set_resolver(S, NULL, NULL);
     /* Load directly since we know the path */
-    mino_val_t *r = mino_load_file(S, "/tmp/mino_macro_mod.mino", env);
+    mino_val_t *r = mino_load_file(S, "/tmp/mino_macro_mod.clj", env);
     CHK(r != NULL, "load failed");
 
     /* Use the macro */

@@ -636,7 +636,7 @@ static const char *test_resolver(const char *name, void *ctx)
 {
     (void)ctx;
     if (strcmp(name, "test-mod") == 0) {
-        return "/tmp/mino_test_mod.mino";
+        return "/tmp/mino_test_mod.clj";
     }
     return NULL;
 }
@@ -649,7 +649,7 @@ static void test_module_resolver(void)
     mino_install_io(S, env);
 
     /* Write a temp module file. */
-    FILE *f = fopen("/tmp/mino_test_mod.mino", "w");
+    FILE *f = fopen("/tmp/mino_test_mod.clj", "w");
     fprintf(f, "(def mod-value 999)\n");
     fclose(f);
 

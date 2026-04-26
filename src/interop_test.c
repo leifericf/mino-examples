@@ -2,7 +2,7 @@
  * interop_test.c -- test driver for host interop system.
  *
  * Registers mock capabilities (Counter type, Math statics), then runs
- * tests/interop_test.mino which exercises all four host primitives
+ * tests/interop_test.clj which exercises all four host primitives
  * and verifies error handling.
  *
  * Build: make test-interop
@@ -107,10 +107,10 @@ static const char *resolve_module(const char *name, void *ctx)
     char *buf;
     size_t len;
     (void)ctx;
-    len = strlen(name) + 6; /* name + ".mino" + NUL */
+    len = strlen(name) + 5; /* name + ".clj" + NUL */
     buf = (char *)malloc(len);
     if (buf == NULL) return NULL;
-    snprintf(buf, len, "%s.mino", name);
+    snprintf(buf, len, "%s.clj", name);
     return buf;
 }
 
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
     mino_host_enable(S);
 
     /* Run the mino test file. */
-    result = mino_load_file(S, "tests/interop_test.mino", env);
+    result = mino_load_file(S, "tests/interop_test.clj", env);
     if (result == NULL) {
         fprintf(stderr, "interop test failed: %s\n", mino_last_error(S));
         mino_state_free(S);

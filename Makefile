@@ -53,7 +53,7 @@ all: $(ALL_BINS)
 
 # --- Generated header ---
 
-mino/src/core_mino.h: mino/src/core.mino
+mino/src/core_mino.h: mino/src/core.clj
 	@printf 'static const char *core_mino_src =\n' > $@
 	@sed 's/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$$/\\n"/' $< >> $@
 	@printf '    ;\n' >> $@
