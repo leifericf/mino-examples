@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Tracking mino v0.74.0 (deferred core surface): `*ns*` is interned as
+  a real dynamic var, `bound-fn` / `bound-fn*` capture and replay
+  dynamic bindings, `read` accepts an opts map, `clojure.edn/read`
+  forces `:read-cond :preserve`, `destructure` surfaces the C-side
+  destructuring as a function, and the bundled regex engine grows
+  capture groups with `re-matcher` and `re-groups`. Every cookbook
+  recipe and use-case still builds and runs against the refreshed
+  submodule. Makefile picks up `runtime/ns_env.c` and
+  `runtime/path_buf.c` automatically through the per-subsystem
+  wildcards.
+- Tracking mino v0.73.0 (first-class namespaces): each namespace owns
+  its own root binding table, `clojure.core` is the bundled-core
+  namespace, vars are first-class objects, auto-resolved keywords and
+  namespaced map literals land at read time, and source files use
+  `.clj` instead of `.mino`. Host-tests, Makefile, and embedded mino
+  scripts swap to `.clj` source paths alongside the migration.
 - Tracking mino v0.48.0: embedder polish release adds `MINO_VERSION_*`
   constants, `mino_version_string()`, `mino_throw(S, payload)` for
   raising mino exceptions from C, and `mino_args_parse(S, name, args,
