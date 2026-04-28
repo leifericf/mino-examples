@@ -51,14 +51,55 @@ ALL_BINS := $(C_BINS) $(COOKBOOK_BINS) $(CXX_BINS) $(USE_CASE_BINS) $(REGEX_BIN)
 
 all: $(ALL_BINS)
 
-# --- Generated header ---
+# --- Bundled-stdlib generated headers ---
+# install_stdlib.c #includes one C string-literal header per bundled
+# namespace; these are gitignored generated artifacts.
 
-mino/src/core_mino.h: mino/src/core.clj
-	@printf 'static const char *core_mino_src =\n' > $@
-	@sed 's/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$$/\\n"/' $< >> $@
-	@printf '    ;\n' >> $@
+define gen-mino-header
+mino/src/$(2).h: mino/$(1)
+	@printf 'static const char *$(2)_src =\n' > $$@
+	@sed 's/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$$$$/\\n"/' $$< >> $$@
+	@printf '    ;\n' >> $$@
+endef
+
+$(eval $(call gen-mino-header,src/core.clj,core_mino))
+$(eval $(call gen-mino-header,lib/clojure/string.clj,lib_clojure_string))
+$(eval $(call gen-mino-header,lib/clojure/set.clj,lib_clojure_set))
+$(eval $(call gen-mino-header,lib/clojure/walk.clj,lib_clojure_walk))
+$(eval $(call gen-mino-header,lib/clojure/edn.clj,lib_clojure_edn))
+$(eval $(call gen-mino-header,lib/clojure/pprint.clj,lib_clojure_pprint))
+$(eval $(call gen-mino-header,lib/clojure/zip.clj,lib_clojure_zip))
+$(eval $(call gen-mino-header,lib/clojure/data.clj,lib_clojure_data))
+$(eval $(call gen-mino-header,lib/clojure/test.clj,lib_clojure_test))
+$(eval $(call gen-mino-header,lib/clojure/template.clj,lib_clojure_template))
+$(eval $(call gen-mino-header,lib/clojure/repl.clj,lib_clojure_repl))
+$(eval $(call gen-mino-header,lib/clojure/stacktrace.clj,lib_clojure_stacktrace))
+$(eval $(call gen-mino-header,lib/clojure/datafy.clj,lib_clojure_datafy))
+$(eval $(call gen-mino-header,lib/clojure/core/protocols.clj,lib_clojure_core_protocols))
+$(eval $(call gen-mino-header,lib/clojure/instant.clj,lib_clojure_instant))
+$(eval $(call gen-mino-header,lib/clojure/spec/alpha.clj,lib_clojure_spec_alpha))
+$(eval $(call gen-mino-header,lib/clojure/core/specs/alpha.clj,lib_clojure_core_specs_alpha))
+
+MINO_GEN_HEADERS := mino/src/core_mino.h \
+                    mino/src/lib_clojure_string.h \
+                    mino/src/lib_clojure_set.h \
+                    mino/src/lib_clojure_walk.h \
+                    mino/src/lib_clojure_edn.h \
+                    mino/src/lib_clojure_pprint.h \
+                    mino/src/lib_clojure_zip.h \
+                    mino/src/lib_clojure_data.h \
+                    mino/src/lib_clojure_test.h \
+                    mino/src/lib_clojure_template.h \
+                    mino/src/lib_clojure_repl.h \
+                    mino/src/lib_clojure_stacktrace.h \
+                    mino/src/lib_clojure_datafy.h \
+                    mino/src/lib_clojure_core_protocols.h \
+                    mino/src/lib_clojure_instant.h \
+                    mino/src/lib_clojure_spec_alpha.h \
+                    mino/src/lib_clojure_core_specs_alpha.h
 
 mino/src/prim/install.o: mino/src/prim/install.c mino/src/core_mino.h
+mino/src/prim/install_stdlib.o: mino/src/prim/install_stdlib.c $(MINO_GEN_HEADERS)
 
 # --- Build rules ---
 
@@ -97,4 +138,4 @@ test-use-cases: $(USE_CASE_BINS)
 	@echo "all use case examples passed"
 
 clean:
-	rm -f $(MINO_OBJS) $(ALL_BINS) mino/src/core_mino.h
+	rm -f $(MINO_OBJS) $(ALL_BINS) $(MINO_GEN_HEADERS)
