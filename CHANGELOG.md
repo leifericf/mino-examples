@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Tracking mino v0.94.0 (empty-list canon parity: `()` is now a real
+  value type, distinct from nil). Cookbook examples that rely on
+  `nil`-punned empty results are unaffected; embed-side C code that
+  walks `MINO_CONS` chains via `mino_is_cons` already terminates on
+  any non-cons, so the new `MINO_EMPTY_LIST` enum is transparent.
 - Tracking mino v0.93.0 (C refactoring pass; bundled `mino deps` and
   `mino task` tooling; bootstrap Makefile). The Makefile gains three
   gen-mino-header entries for the new `lib/mino/*` sources that v0.93.0
