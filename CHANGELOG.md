@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Tracking mino v0.96.8 (Canon-Parity cycle: real `MINO_VOLATILE`
+  primitive, stateful-transducer rewrites, lazy-seq recur-on-skip,
+  transient reductions, comp/partial/some-fn/every-pred unrolling
+  plus `into` 0/1-arg and `unchecked-divide-int`, `iteration` from
+  Clojure 1.11, `clojure.core.async` namespace wrap with `merge`/`into`
+  renames, the `:refer :all` transitive-drag fix, and the chunked-seq
+  family with two new value types and eight primitives). No
+  example-side changes — embed-side C and C++ code does not switch
+  on every value-type tag and the cookbook scripts use only stable
+  surface; everything builds and links against the bumped submodule.
 - Tracking mino v0.95.5 (Clojure-side hygiene pass: bundled stdlib
   refactor). No example-side changes — the hygiene pass is internal
   to the mino-side library; embed-side C and C++ code is unaffected
