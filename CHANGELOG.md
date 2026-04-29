@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Tracking mino v0.93.0 (C refactoring pass; bundled `mino deps` and
+  `mino task` tooling; bootstrap Makefile). The Makefile gains three
+  gen-mino-header entries for the new `lib/mino/*` sources that v0.93.0
+  bakes into the binary. Every cookbook recipe and use-case still
+  builds and runs against the refreshed submodule.
 - Tracking mino v0.74.0 (deferred core surface): `*ns*` is interned as
   a real dynamic var, `bound-fn` / `bound-fn*` capture and replay
   dynamic bindings, `read` accepts an opts map, `clojure.edn/read`
