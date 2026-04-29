@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Tracking mino v0.95.5 (Clojure-side hygiene pass: bundled stdlib
+  refactor). No example-side changes — the hygiene pass is internal
+  to the mino-side library; embed-side C and C++ code is unaffected
+  and the cookbook continues to compile against the bumped submodule.
 - Tracking mino v0.94.0 (empty-list canon parity: `()` is now a real
   value type, distinct from nil). Cookbook examples that rely on
   `nil`-punned empty results are unaffected; embed-side C code that
