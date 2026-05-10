@@ -116,7 +116,7 @@ int main(void)
         mino_val_t *fn  = mino_env_get(env, "square");
         mino_val_t *bad = mino_cons(S, mino_string(S, "oops"), mino_nil(S));
         mino_val_t *out = NULL;
-        int rc = mino_pcall(S, fn, bad, env, &out);
+        int rc = mino_pcall(S, fn, bad, env, &out, NULL);
         if (rc != 0) {
             printf("pcall caught: %s\n", mino_last_error(S));
         }

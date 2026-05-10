@@ -157,7 +157,7 @@ static mino_val_t *prim_safe_divide(mino_state_t *S, mino_val_t *args, mino_env_
 
     mino_val_t *fn = mino_env_get(env, "/");
     mino_val_t *out = NULL;
-    int rc = mino_pcall(S, fn, args, env, &out);
+    int rc = mino_pcall(S, fn, args, env, &out, NULL);
     if (rc != 0) {
         return mino_string(S, "div-error");
     }

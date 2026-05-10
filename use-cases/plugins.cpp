@@ -156,7 +156,7 @@ int main()
         mino_val_t *bad = mino_string(S, "not a document");
         mino_val_t *out = nullptr;
         int rc = mino_pcall(S, mino_env_get(env, "enrich"),
-                            mino_cons(S, bad, mino_nil(S)), env, &out);
+                            mino_cons(S, bad, mino_nil(S)), env, &out, nullptr);
         if (rc != 0)
             printf("caught: %s\n", mino_last_error(S));
 

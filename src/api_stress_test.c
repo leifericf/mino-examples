@@ -466,7 +466,7 @@ static void test_pcall_success(void)
     mino_val_t *args = mino_cons(S, mino_int(S, 1),
                        mino_cons(S, mino_int(S, 2), mino_nil(S)));
     mino_val_t *out = NULL;
-    int rc = mino_pcall(S, fn, args, env, &out);
+    int rc = mino_pcall(S, fn, args, env, &out, NULL);
     ASSERT(rc == 0, "pcall should return 0");
     ASSERT(out != NULL, "no result");
     long long val;
@@ -490,7 +490,7 @@ static void test_pcall_error(void)
     mino_val_t *args = mino_cons(S, mino_int(S, 1),
                        mino_cons(S, mino_int(S, 0), mino_nil(S)));
     mino_val_t *out = NULL;
-    int rc = mino_pcall(S, fn, args, env, &out);
+    int rc = mino_pcall(S, fn, args, env, &out, NULL);
     ASSERT(rc == -1, "pcall should return -1");
     ASSERT(out == NULL, "out should be NULL");
 
