@@ -21,6 +21,7 @@ src/regex_thread_test
 src/state_switch_test
 src/cpp_embed_test
 src/event_processing
+src/cookbook/agents
 src/cookbook/config
 src/cookbook/console
 src/cookbook/pipeline
