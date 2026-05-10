@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- Tracking mino v0.103.0 (Worker-List Lock Split: brief
+  `worker_list_lock` separated from the recursive `state_lock`
+  for the worker bookkeeping path. The public C surface is
+  unchanged; embedders that rebuild against the new submodule
+  pick up the fix transparently. The `agents` cookbook example
+  benefits without code changes -- a tight calling-thread loop
+  while agent workers are spawning no longer stalls
+  `thread_count` decrement). The `.gitignore` gains a
+  `src/cookbook/agents` entry alongside the other cookbook
+  binaries so a fresh `make` doesn't show the binary as
+  untracked.
+- Tracking mino v0.102.1 (Agents finish MVP cycle: per-state
+  agent workers + run-queues with separate POOLED / SOLO pools
+  for `send` / `send-off`; public C-API perimeter for embedders
+  (`mino_send`, `mino_send_off`, `mino_await`, `mino_await_for`,
+  `mino_agent_error`, `mino_restart_agent`); `await` and
+  `await-for` now actually block; `shutdown-agents` joins both
+  pool workers; `restart-agent` accepts `:clear-actions true`;
+  the v0.102.1 patch closed an adversarial-test pass with a
+  thread-budget message accuracy fix). The
+  `src/cookbook/agents.c` example was added in this cycle to
+  demonstrate the full C-API perimeter end-to-end.
 - Tracking mino v0.101.0 (STM cycle): refs, `dosync`, `alter`,
   `commute`, `ensure`, `ref-set`, `io!`, watches and validators on
   refs and vars; agents (`agent`, `send`, `send-off`, `await`,
