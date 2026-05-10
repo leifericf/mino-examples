@@ -217,7 +217,7 @@ static void test_exception_from_cpp(void)
     /* Good call */
     mino_val_t *args1 = mino_cons(s, mino_int(s, 5), mino_nil(s));
     mino_val_t *out = nullptr;
-    int rc = mino_pcall(s, fn_ref.get(), args1, env, &out, nullptr);
+    int rc = mino_pcall(s, fn_ref.get(), args1, env, &out, NULL);
     ASSERT(rc == 0, "pcall should succeed");
     long long val;
     ASSERT(mino_to_int(out, &val), "not int");
@@ -225,7 +225,7 @@ static void test_exception_from_cpp(void)
 
     /* Bad call */
     mino_val_t *args2 = mino_cons(s, mino_int(s, -3), mino_nil(s));
-    rc = mino_pcall(s, fn_ref.get(), args2, env, &out, nullptr);
+    rc = mino_pcall(s, fn_ref.get(), args2, env, &out, NULL);
     ASSERT(rc == -1, "pcall should fail");
     const char *err = mino_last_error(s);
     ASSERT(err != nullptr && strstr(err, "negative") != nullptr, "wrong error");
