@@ -23,10 +23,11 @@ int main(void)
     mino_state_t *S   = mino_state_new();
     mino_env_t   *env = mino_new(S);
 
-    /* Each agent pool needs its own worker thread, so the host
-     * must grant at least 3 (embedder + POOLED + SOLO). The
-     * standalone REPL bumps thread_limit to cpu_count for free;
-     * embedders opt in explicitly. */
+    /* Each agent pool needs its own worker thread (the embedder
+     * thread does not count). For both POOLED and SOLO concurrently,
+     * grant at least 2; we ask for 4 here to leave headroom for any
+     * additional futures. The standalone REPL bumps thread_limit to
+     * cpu_count automatically; embedders opt in explicitly. */
     mino_set_thread_limit(S, 4);
     mino_install_agent(S, env);
 
