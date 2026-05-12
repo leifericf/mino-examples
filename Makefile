@@ -9,12 +9,13 @@ MINO_INCS := -Imino/src -Imino/src/public -Imino/src/runtime \
 CFLAGS   ?= -std=c99 -Wall -Wpedantic -Wextra -O2 $(MINO_INCS)
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 $(MINO_INCS)
 LDFLAGS  ?=
-LIBS     ?= -lm
+LIBS     ?= -lm -lpthread
 
 MINO_SRCS := $(wildcard mino/src/public/*.c) \
              $(wildcard mino/src/runtime/*.c) \
              $(wildcard mino/src/gc/*.c) \
              $(wildcard mino/src/eval/*.c) \
+             $(wildcard mino/src/eval/bc/*.c) \
              $(wildcard mino/src/collections/*.c) \
              $(wildcard mino/src/prim/*.c) \
              $(wildcard mino/src/async/*.c) \
