@@ -106,7 +106,7 @@ int main()
     /* Plugin 1: metadata enrichment (sandboxed, no I/O). */
     {
         mino_env_t *env = mino_env_new(S);
-        mino_install_core(S, env);
+        mino_install(S, env, MINO_CAP_DEFAULT);
 
         if (!mino_eval_string(S, metadata_plugin, env)) {
             fprintf(stderr, "plugin load error: %s\n", mino_last_error(S));
@@ -126,7 +126,7 @@ int main()
     /* Plugin 2: tag filter (separate sandbox). */
     {
         mino_env_t *env = mino_env_new(S);
-        mino_install_core(S, env);
+        mino_install(S, env, MINO_CAP_DEFAULT);
 
         if (!mino_eval_string(S, filter_plugin, env)) {
             fprintf(stderr, "plugin load error: %s\n", mino_last_error(S));
@@ -149,7 +149,7 @@ int main()
     /* Protected call: demonstrate error isolation. */
     {
         mino_env_t *env = mino_env_new(S);
-        mino_install_core(S, env);
+        mino_install(S, env, MINO_CAP_DEFAULT);
         mino_eval_string(S, metadata_plugin, env);
 
         printf("\n=== error isolation ===\n");

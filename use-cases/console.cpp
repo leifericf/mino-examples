@@ -113,7 +113,7 @@ static const char *prelude =
 int main()
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     /* Step limit: prevent runaway scripts. */
     mino_set_limit(S, MINO_LIMIT_STEPS, 100000);

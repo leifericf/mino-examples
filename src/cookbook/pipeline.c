@@ -16,7 +16,7 @@
 int main(void)
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
     mino_val_t *result;
 
     /* Build a vector of employee records from C data. */
@@ -79,10 +79,10 @@ int main(void)
         while (mino_is_cons(p)) {
             const char *s;
             size_t      len;
-            if (mino_to_string(p->as.cons.car, &s, &len)) {
+            if (mino_to_string(mino_car(p), &s, &len)) {
                 printf("  %.*s\n", (int)len, s);
             }
-            p = p->as.cons.cdr;
+            p = mino_cdr(p);
         }
     }
 

@@ -40,17 +40,17 @@ static mino_val_t *host_move(mino_state_t *S, mino_val_t *args, mino_env_t *env)
 {
     double dx, dy;
     (void)env;
-    if (!mino_is_cons(args) || !mino_is_cons(args->as.cons.cdr)) {
+    if (!mino_is_cons(args) || !mino_is_cons(mino_cdr(args))) {
         return mino_nil(S);
     }
-    if (!mino_to_float(args->as.cons.car, &dx)) {
+    if (!mino_to_float(mino_car(args), &dx)) {
         long long ix;
-        if (mino_to_int(args->as.cons.car, &ix)) dx = (double)ix;
+        if (mino_to_int(mino_car(args), &ix)) dx = (double)ix;
         else return mino_nil(S);
     }
-    if (!mino_to_float(args->as.cons.cdr->as.cons.car, &dy)) {
+    if (!mino_to_float(mino_car(mino_cdr(args)), &dy)) {
         long long iy;
-        if (mino_to_int(args->as.cons.cdr->as.cons.car, &iy)) dy = (double)iy;
+        if (mino_to_int(mino_car(mino_cdr(args)), &iy)) dy = (double)iy;
         else return mino_nil(S);
     }
     player.x += dx;
@@ -68,7 +68,7 @@ static mino_val_t *host_heal(mino_state_t *S, mino_val_t *args, mino_env_t *env)
 {
     long long amount;
     (void)env;
-    if (mino_is_cons(args) && mino_to_int(args->as.cons.car, &amount)) {
+    if (mino_is_cons(args) && mino_to_int(mino_car(args), &amount)) {
         player.hp += (int)amount;
         if (player.hp > player.max_hp) player.hp = player.max_hp;
     }
@@ -79,7 +79,7 @@ static mino_val_t *host_damage(mino_state_t *S, mino_val_t *args, mino_env_t *en
 {
     long long amount;
     (void)env;
-    if (mino_is_cons(args) && mino_to_int(args->as.cons.car, &amount)) {
+    if (mino_is_cons(args) && mino_to_int(mino_car(args), &amount)) {
         player.hp -= (int)amount;
         if (player.hp < 0) player.hp = 0;
     }
@@ -102,10 +102,10 @@ static mino_val_t *host_status(mino_state_t *S, mino_val_t *args, mino_env_t *en
 int main(void)
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     /* Install I/O so scripts can use println. */
-    mino_install_io(S, env);
+    mino_install(S, env, MINO_CAP_IO);
 
     /* Limit scripts to 100k eval steps to prevent infinite loops. */
     mino_set_limit(S, MINO_LIMIT_STEPS, 100000);

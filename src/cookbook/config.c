@@ -38,7 +38,7 @@ int main(void)
 
     /* Core bindings only - no I/O. The config file cannot read files,
      * print, or access the network. */
-    mino_install_core(S, env);
+    mino_install(S, env, MINO_CAP_DEFAULT);
 
     /* Evaluate the config source. */
     cfg = mino_eval_string(S, config_src, env);

@@ -64,7 +64,7 @@ static mino_val_t *counter_add(mino_state_t *S, mino_val_t *target,
     long long n;
     (void)S; (void)ctx;
     c = (counter_t *)mino_handle_ptr(target);
-    if (!mino_is_cons(args) || !mino_to_int(args->as.cons.car, &n))
+    if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &n))
         return NULL;
     c->val += n;
     return target;
@@ -86,10 +86,10 @@ static mino_val_t *math_add(mino_state_t *S, mino_val_t *target,
 {
     long long a, b;
     (void)target; (void)ctx;
-    if (!mino_is_cons(args) || !mino_to_int(args->as.cons.car, &a))
+    if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &a))
         return NULL;
-    args = args->as.cons.cdr;
-    if (!mino_is_cons(args) || !mino_to_int(args->as.cons.car, &b))
+    args = mino_cdr(args);
+    if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &b))
         return NULL;
     return mino_int(S, a + b);
 }
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     (void)argv;
 
     S   = mino_state_new();
-    env = mino_new(S);
+    env = mino_env_new_default(S);
     mino_set_resolver(S, resolve_module, NULL);
 
     /* Register Counter type. */

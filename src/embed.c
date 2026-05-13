@@ -18,7 +18,7 @@ static mino_val_t *host_add_tax(mino_state_t *S, mino_val_t *args, mino_env_t *e
 {
     long long amount;
     (void)env;
-    if (!mino_is_cons(args) || !mino_to_int(args->as.cons.car, &amount)) {
+    if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &amount)) {
         return mino_nil(S);
     }
     return mino_float(S, (double)amount * 1.08);
@@ -27,7 +27,7 @@ static mino_val_t *host_add_tax(mino_state_t *S, mino_val_t *args, mino_env_t *e
 int main(void)
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);       /* env + core in one call */
+    mino_env_t   *env = mino_env_new_default(S);       /* env + core in one call */
 
     /* Register a host-defined function. */
     mino_register_fn(S, env, "add-tax", host_add_tax);

@@ -61,7 +61,7 @@ static mino_val_t *call2(mino_state_t *S, mino_env_t *env, const char *name,
 int main(void)
 {
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     mino_val_t *result;
 
     /* Load the greeter plugin. */

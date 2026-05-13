@@ -121,7 +121,7 @@ static const char *script =
 int main()
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     /* Register the EventSource type with constructor, method, getter. */
     mino_host_enable(S);

@@ -39,7 +39,7 @@ static mino_val_t *acc_add(mino_state_t *S, mino_val_t *target,
                            mino_val_t *args, void *) {
     auto *a = static_cast<Accumulator *>(mino_handle_ptr(target));
     double v;
-    mino_to_float(args->as.cons.car, &v);
+    mino_to_float(mino_car(args), &v);
     a->values.push_back(v);
     a->total += v;
     return target;
@@ -59,7 +59,7 @@ static mino_val_t *acc_count(mino_state_t *S, mino_val_t *target,
 
 int main() {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     // Register the Accumulator type with mino.
     mino_host_enable(S);

@@ -21,7 +21,7 @@
 int main(void)
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     /* Each agent pool needs its own worker thread (the embedder
      * thread does not count). For both POOLED and SOLO concurrently,
@@ -29,7 +29,7 @@ int main(void)
      * additional futures. The standalone REPL bumps thread_limit to
      * cpu_count automatically; embedders opt in explicitly. */
     mino_set_thread_limit(S, 4);
-    mino_install_agent(S, env);
+    mino_install(S, env, MINO_CAP_AGENT);
 
     /* (fn [v] (inc v)) - increment the agent's value. */
     mino_val_t *inc_fn = mino_eval_string(S, "(fn [v] (inc v))", env);
@@ -55,7 +55,7 @@ int main(void)
     }
 
     printf("counter after 2 send + 1 send-off = ");
-    mino_println(S, counter->as.agent.val);  /* prints 3 */
+    mino_println(S, mino_agent_deref(counter));  /* prints 3 */
 
     /* mino_await_for returns 1 if every agent reaches zero in-flight
      * before the deadline, 0 on timeout. The trivial path returns 1
@@ -97,7 +97,7 @@ int main(void)
          * actions that were queued before the failure latched. */
         mino_restart_agent(S, guarded, mino_int(S, 5), 1);
         printf("guarded agent after restart: ");
-        mino_println(S, guarded->as.agent.val);  /* prints 5 */
+        mino_println(S, mino_agent_deref(guarded));  /* prints 5 */
     }
 
     /* Quiesce both pool workers before tearing down the state.

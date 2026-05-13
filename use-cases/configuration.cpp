@@ -94,7 +94,7 @@ int main()
     /* Create a sandboxed runtime: core bindings only, no I/O. */
     mino_state_t *S   = mino_state_new();
     mino_env_t   *env = mino_env_new(S);
-    mino_install_core(S, env);
+    mino_install(S, env, MINO_CAP_DEFAULT);
 
     /* Register the BuildEnv type. */
     mino_host_enable(S);

@@ -20,8 +20,8 @@ static void test_interleaved_eval(void)
     TEST("Interleaved eval_string across two states");
     mino_state_t *s1 = mino_state_new();
     mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_new(s1);
-    mino_env_t *e2 = mino_new(s2);
+    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_env_t *e2 = mino_env_new_default(s2);
     int i;
     long long v1, v2;
 
@@ -52,8 +52,8 @@ static void test_cross_state_value_safety(void)
     TEST("Values from one state used via eval in another (via clone)");
     mino_state_t *s1 = mino_state_new();
     mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_new(s1);
-    mino_env_t *e2 = mino_new(s2);
+    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_env_t *e2 = mino_env_new_default(s2);
 
     mino_val_t *v = mino_eval_string(s1, "{:data [1 2 3] :name \"test\"}", e1);
     CHK(v != NULL, "eval failed");
@@ -89,8 +89,8 @@ static void test_current_state_in_primitive(void)
     TEST("explicit state correct inside primitive callback");
     mino_state_t *s1 = mino_state_new();
     mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_new(s1);
-    mino_env_t *e2 = mino_new(s2);
+    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_env_t *e2 = mino_env_new_default(s2);
 
     mino_register_fn(s1, e1, "check-state", prim_check_state);
     mino_register_fn(s2, e2, "check-state", prim_check_state);
@@ -113,7 +113,7 @@ static void test_env_clone_shared_atoms(void)
 {
     TEST("env_clone shares mutable atom references");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
 
     mino_eval_string(S, "(def shared-atom (atom 0))", env);
     mino_env_t *clone = mino_env_clone(S, env);
@@ -138,8 +138,8 @@ static void test_gc_multi_env_roots(void)
 {
     TEST("GC respects multiple env roots");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env1 = mino_new(S);
-    mino_env_t *env2 = mino_new(S);
+    mino_env_t *env1 = mino_env_new_default(S);
+    mino_env_t *env2 = mino_env_new_default(S);
     int i;
 
     mino_eval_string(S, "(def big-vec (into [] (range 200)))", env1);
@@ -174,7 +174,7 @@ static void test_ref_churn(void)
 {
     TEST("Rapid ref/unref cycles (1000 iterations)");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     int i;
 
     for (i = 0; i < 1000; i++) {
@@ -198,7 +198,7 @@ static void test_eval_string_multi_form_error(void)
 {
     TEST("eval_string: error in middle form stops execution");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
 
     /* First form succeeds, second errors, third should not run */
     mino_val_t *r = mino_eval_string(S,
@@ -220,7 +220,7 @@ static void test_read_eval_cycle(void)
 {
     TEST("Manual read-eval cycle");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
 
     const char *src = "(+ 1 2) (* 3 4)";
     const char *end = NULL;
@@ -253,12 +253,12 @@ static void test_call_user_fn(void)
 {
     TEST("mino_call with user-defined closure");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
 
     mino_val_t *fn = mino_eval_string(S,
         "(fn (a b c) (+ (* a b) c))", env);
     CHK(fn != NULL, "fn creation failed");
-    CHK(fn->type == MINO_FN, "not a fn");
+    CHK(mino_is_fn(fn), "not a fn");
 
     mino_val_t *args = mino_cons(S, mino_int(S, 3),
                        mino_cons(S, mino_int(S, 4),
@@ -279,7 +279,7 @@ static void test_multiple_repls(void)
 {
     TEST("Two REPL handles sharing one env");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     mino_repl_t *r1 = mino_repl_new(S, env);
     mino_repl_t *r2 = mino_repl_new(S, env);
     mino_val_t *out = NULL;

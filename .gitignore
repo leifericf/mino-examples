@@ -22,8 +22,11 @@ src/state_switch_test
 src/cpp_embed_test
 src/event_processing
 src/cookbook/agents
+src/cookbook/build_collections
 src/cookbook/config
 src/cookbook/console
+src/cookbook/error_handling
+src/cookbook/iterate
 src/cookbook/pipeline
 src/cookbook/plugin
 src/cookbook/repl_socket

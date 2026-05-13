@@ -67,8 +67,8 @@ int main(void)
 
     /* Create the mino runtime with full capabilities. */
     mino_state_t *S = mino_state_new();
-    env = mino_new(S);
-    mino_install_io(S, env);
+    env = mino_env_new_default(S);
+    mino_install(S, env, MINO_CAP_IO);
     repl = mino_repl_new(S, env);
 
     send_str(cli, "mino REPL\n");

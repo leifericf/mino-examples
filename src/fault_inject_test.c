@@ -6,7 +6,7 @@
  * (not crashes or aborts).
  */
 
-#include "mino.h"
+#include "mino_internal.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@ static void test_map_oom(void)
 {
     TEST("map construction OOM returns error, not crash");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(hash-map :a 1 :b 2 :c 3 :d 4)", 200);
@@ -68,7 +68,7 @@ static void test_vector_oom(void)
 {
     TEST("vector construction OOM returns error, not crash");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(into [] (range 100))", 500);
@@ -92,7 +92,7 @@ static void test_binding_oom(void)
 {
     TEST("binding form OOM returns error, not crash");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env,
@@ -117,7 +117,7 @@ static void test_regex_oom(void)
 {
     TEST("regex compile OOM returns error, not crash");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(re-find #\"[a-z]+\" \"hello\")", 200);
@@ -140,7 +140,7 @@ static void test_oom_catchable(void)
 {
     TEST("OOM is catchable via try/catch in mino code");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     long n;
     mino_val_t *r;
 
@@ -156,7 +156,7 @@ static void test_oom_catchable(void)
     /* The try/catch itself might need allocations that also fail.
      * Accept either a caught result or a NULL return. */
     if (r != NULL) {
-        CHK(r->type == MINO_KEYWORD, "expected keyword :oom");
+        CHK(mino_is_keyword(r), "expected keyword :oom");
     }
 
     /* Either way, state should be recoverable. */
@@ -173,8 +173,8 @@ static void test_clone_vector_oom(void)
     TEST("clone vector OOM returns NULL, not crash");
     mino_state_t *src = mino_state_new();
     mino_state_t *dst = mino_state_new();
-    mino_env_t *se = mino_new(src);
-    mino_env_t *de = mino_new(dst);
+    mino_env_t *se = mino_env_new_default(src);
+    mino_env_t *de = mino_env_new_default(dst);
     long n;
 
     mino_val_t *v = mino_eval_string(src, "[1 2 3 4 5]", se);
@@ -210,8 +210,8 @@ static void test_clone_map_oom(void)
     TEST("clone map OOM returns NULL, not crash");
     mino_state_t *src = mino_state_new();
     mino_state_t *dst = mino_state_new();
-    mino_env_t *se = mino_new(src);
-    mino_env_t *de = mino_new(dst);
+    mino_env_t *se = mino_env_new_default(src);
+    mino_env_t *de = mino_env_new_default(dst);
     long n;
 
     mino_val_t *v = mino_eval_string(src, "{:a 1 :b 2 :c 3}", se);
@@ -244,7 +244,7 @@ static void test_repeated_oom_recovery(void)
 {
     TEST("repeated OOM + recovery cycles don't corrupt state");
     mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_new(S);
+    mino_env_t *env = mino_env_new_default(S);
     int i;
 
     for (i = 0; i < 50; i++) {

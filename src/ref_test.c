@@ -28,7 +28,7 @@ static void test_finalizer(void *ptr, const char *tag)
 int main(void)
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     /* ---- Test 1: ref keeps a value alive across GC ---- */
     {

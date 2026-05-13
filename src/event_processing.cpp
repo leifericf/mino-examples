@@ -115,7 +115,7 @@ static const char *script =
 int main()
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_new(S);
+    mino_env_t   *env = mino_env_new_default(S);
 
     mino_host_enable(S);
     mino_host_register_ctor(S, "EventSource", 0, source_new, nullptr);

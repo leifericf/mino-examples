@@ -15,6 +15,15 @@ extern "C" {
 #include <functional>
 #include <memory>
 
+static size_t count_collection(mino_state_t *S, const mino_val_t *v)
+{
+    size_t n = 0;
+    mino_iter_t *it = mino_iter_new(S, (mino_val_t *)v);
+    while (mino_iter_next(it, NULL, NULL)) n++;
+    mino_iter_free(it);
+    return n;
+}
+
 static int tests_run    = 0;
 static int tests_passed = 0;
 
@@ -41,7 +50,7 @@ struct MiState {
 struct MiEnv {
     mino_state_t *s;
     mino_env_t   *e;
-    MiEnv(mino_state_t *st) : s(st), e(mino_new(st)) {}
+    MiEnv(mino_state_t *st) : s(st), e(mino_env_new_default(st)) {}
     ~MiEnv() { mino_env_free(s, e); }
     MiEnv(const MiEnv&) = delete;
     operator mino_env_t*() { return e; }
@@ -87,8 +96,8 @@ static void test_raii_ref(void)
     for (int i = 0; i < 50; i++)
         mino_eval_string(s, "(into [] (range 100))", env);
 
-    ASSERT(ref.get()->type == MINO_VECTOR, "not vector after GC");
-    ASSERT(ref.get()->as.vec.len == 3, "wrong length");
+    ASSERT(mino_is_vector(ref.get()), "not vector after GC");
+    ASSERT(count_collection(s, ref.get()) == 3, "wrong length");
     PASS();
 }
 
@@ -123,7 +132,7 @@ static void test_cpp_vector_to_mino(void)
     }
     mino_val_t *mv = mino_vector(s, vals.data(), vals.size());
     ASSERT(mv != nullptr, "vector failed");
-    ASSERT(mv->as.vec.len == 5, "wrong length");
+    ASSERT(count_collection(s, mv) == 5, "wrong length");
 
     /* Pass to mino for processing, get back */
     mino_env_set(s, env, "data", mv);
@@ -142,9 +151,9 @@ static std::function<long long(long long)> g_transform;
 static mino_val_t *prim_cpp_transform(mino_state_t *S, mino_val_t *args, mino_env_t *env)
 {
     (void)env;
-    if (!args || args->type != MINO_CONS) return mino_nil(S);
+    if (!mino_is_cons(args)) return mino_nil(S);
     long long n;
-    if (!mino_to_int(args->as.cons.car, &n)) return mino_nil(S);
+    if (!mino_to_int(mino_car(args), &n)) return mino_nil(S);
     return mino_int(S, g_transform(n));
 }
 
@@ -162,8 +171,8 @@ static void test_cpp_closure_as_primitive(void)
     mino_val_t *r = mino_eval_string(s,
         "(into [] (map cpp-transform [1 2 3 4 5]))", env);
     ASSERT(r != nullptr, "eval failed");
-    ASSERT(r->type == MINO_VECTOR, "not vector");
-    ASSERT(r->as.vec.len == 5, "wrong length");
+    ASSERT(mino_is_vector(r), "not vector");
+    ASSERT(count_collection(s, r) == 5, "wrong length");
 
     /* Verify: [7 14 21 28 35] */
     mino_env_set(s, env, "result", r);
@@ -223,12 +232,19 @@ static void test_exception_from_cpp(void)
     ASSERT(mino_to_int(out, &val), "not int");
     ASSERT(val == 25, "expected 25");
 
-    /* Bad call */
+    /* Bad call. pcall captures the raw throw payload via out_ex instead
+     * of publishing through mino_last_error -- callers like agent
+     * dispatch want the original ex-info / string the user threw. */
     mino_val_t *args2 = mino_cons(s, mino_int(s, -3), mino_nil(s));
-    rc = mino_pcall(s, fn_ref.get(), args2, env, &out, NULL);
+    mino_val_t *ex = nullptr;
+    rc = mino_pcall(s, fn_ref.get(), args2, env, &out, &ex);
     ASSERT(rc == -1, "pcall should fail");
-    const char *err = mino_last_error(s);
-    ASSERT(err != nullptr && strstr(err, "negative") != nullptr, "wrong error");
+    ASSERT(ex != nullptr, "pcall should surface the throw payload");
+    const char *str = nullptr;
+    size_t      slen = 0;
+    ASSERT(mino_to_string(ex, &str, &slen)
+           && strstr(str, "negative") != nullptr,
+           "wrong error");
     PASS();
 }
 
@@ -238,13 +254,14 @@ static void test_sandboxed_untrusted_code(void)
 {
     TEST("Sandbox: run untrusted code with limits");
     MiState s;
-    /* Deliberately NOT using mino_new -- core only, no I/O */
+    /* Deliberately NOT using mino_env_new_default -- core only, no I/O */
     mino_env_t *sandbox = mino_env_new(s);
-    mino_install_core(s, sandbox);
+    mino_install(s, sandbox, MINO_CAP_DEFAULT);
 
-    /* Untrusted code can't do I/O */
-    mino_val_t *r = mino_eval_string(s, "(println \"pwned\")", sandbox);
-    ASSERT(r == nullptr, "println should be unavailable");
+    /* Untrusted code can't do I/O. slurp is gated on MINO_CAP_IO, which
+     * MINO_CAP_DEFAULT omits, so the symbol stays unresolved. */
+    mino_val_t *r = mino_eval_string(s, "(slurp \"/etc/passwd\")", sandbox);
+    ASSERT(r == nullptr, "slurp should be unavailable");
 
     /* Set step limit to prevent infinite loops */
     mino_set_limit(s, MINO_LIMIT_STEPS, 10000);
