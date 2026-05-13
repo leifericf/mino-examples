@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Tracking mino v0.151.1. Picks up the v0.150.0 and v0.151.0
+  embedding-API revamp — opaque `struct mino_val`, a single
+  `mino_install(S, env, caps)` bitmask entry replacing the 22
+  per-capability installers, a full type-predicate grid, the
+  `_ex` matrix with structured error access, collection builders
+  and a unified iterator, host-syntax routing through the BC
+  tree-walker, namespace-resolved `host/new`, and `mino_int`
+  auto-promote to bigint when `MINO_CAP_BIGNUM` is installed —
+  plus the v0.151.1 embedding hardening (NULL-arg guards on
+  `mino_eval_string` and `mino_read`, sorted-map / sorted-set
+  iter, raw thrown payload through `out_ex`, `mino_to_int`
+  bigint round-trip). The cookbook and use-case examples
+  themselves are unchanged.
+
 - Tracking mino v0.104.0 through v0.149.1. A long stretch of mino
   cycles: bytecode-VM rollout (v0.105.0-v0.114.0), generational
   + incremental GC follow-ups, dialect-complete cycle, C-core
