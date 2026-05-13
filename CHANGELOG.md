@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Tracking mino v0.104.0 through v0.149.1. A long stretch of mino
+  cycles: bytecode-VM rollout (v0.105.0-v0.114.0), generational
+  + incremental GC follow-ups, dialect-complete cycle, C-core
+  refactor cycle, ns-first-class cycle, several conformance and
+  hygiene passes, and the v0.149.1 bug-fix roll-up (hash contract
+  for sequential and sorted collections, sorted-collection
+  dissoc count, `ex-info` 3-arity cause, catch metadata
+  preservation, `fmt_ensure` / `(sh ...)` OOM cleanup, `pclose`
+  `-1` sentinel). The mino runtime added bytecode-VM source
+  files under `src/eval/bc/`; the Makefile's `MINO_SRCS` glob
+  now includes that subdirectory so the embedded runtime links
+  the BC entry points (`_mino_bc_run`, `_mino_bc_compile_fn`,
+  `_mino_bc_check_require`, `_mino_bc_declined`). The cookbook
+  and use-case examples themselves are unchanged.
+
 - Tracking mino v0.103.0 (Worker-List Lock Split: brief
   `worker_list_lock` separated from the recursive `state_lock`
   for the worker bookkeeping path. The public C surface is
