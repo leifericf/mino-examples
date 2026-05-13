@@ -14,13 +14,19 @@ extern "C" {
 #include <vector>
 #include <functional>
 #include <memory>
+#ifdef _WIN32
+#  include <malloc.h>
+#else
+#  include <alloca.h>
+#endif
 
 static size_t count_collection(mino_state_t *S, const mino_val_t *v)
 {
+    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
     size_t n = 0;
-    mino_iter_t *it = mino_iter_new(S, (mino_val_t *)v);
+    mino_iter_init(S, it, (mino_val_t *)v);
     while (mino_iter_next(it, NULL, NULL)) n++;
-    mino_iter_free(it);
+    mino_iter_done(it);
     return n;
 }
 

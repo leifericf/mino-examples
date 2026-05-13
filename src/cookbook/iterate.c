@@ -12,25 +12,32 @@
 
 #include "mino.h"
 #include <stdio.h>
+#ifdef _WIN32
+#  include <malloc.h>
+#else
+#  include <alloca.h>
+#endif
 
 static long long count_seq(mino_state_t *S, mino_val_t *coll)
 {
-    mino_iter_t *it = mino_iter_new(S, coll);
+    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
     long long n = 0;
+    mino_iter_init(S, it, coll);
     while (mino_iter_next(it, NULL, NULL)) n++;
-    mino_iter_free(it);
+    mino_iter_done(it);
     return n;
 }
 
 static long long sum_seq(mino_state_t *S, mino_val_t *coll)
 {
-    mino_iter_t *it = mino_iter_new(S, coll);
+    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
     long long total = 0, x = 0;
     mino_val_t *v;
+    mino_iter_init(S, it, coll);
     while (mino_iter_next(it, &v, NULL)) {
         if (mino_to_int(v, &x)) total += x;
     }
-    mino_iter_free(it);
+    mino_iter_done(it);
     return total;
 }
 
@@ -50,8 +57,9 @@ int main(void)
     {
         mino_val_t *m = mino_eval_string(S,
             "{:a 1 :b 2 :c 3}", env);
-        mino_iter_t *it = mino_iter_new(S, m);
+        mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
         mino_val_t  *k, *v;
+        mino_iter_init(S, it, m);
         printf("map entries:\n");
         while (mino_iter_next(it, &k, &v)) {
             const char *kn; size_t klen;
@@ -60,7 +68,7 @@ int main(void)
             mino_to_int(v, &vn);
             printf("  :%.*s -> %lld\n", (int)klen, kn, vn);
         }
-        mino_iter_free(it);
+        mino_iter_done(it);
     }
 
     /* Lazy seq walk: forced on demand. */
