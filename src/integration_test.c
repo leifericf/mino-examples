@@ -74,8 +74,8 @@ static void test_repl_complex_session(void)
     /* Step 1: define an atom */
     mino_repl_feed(repl, "(def counter (atom 0))", &out);
 
-    /* Step 2: define a function that uses it */
-    mino_repl_feed(repl, "(defn bump () (swap! counter + 1))", &out);
+    /* Step 2: define a function that uses it (Clojure arg-vector form) */
+    mino_repl_feed(repl, "(defn bump [] (swap! counter + 1))", &out);
 
     /* Step 3: call it several times */
     mino_repl_feed(repl, "(bump)", &out);
@@ -88,10 +88,10 @@ static void test_repl_complex_session(void)
     long long v;
     CHK(mino_to_int(out, &v) && v == 3, "counter should be 3");
 
-    /* Step 5: try/catch with binding */
-    rc = mino_repl_feed(repl, "(def *ctx* :default)", &out);
+    /* Step 5: try/catch with binding (binding requires ^:dynamic vars). */
+    rc = mino_repl_feed(repl, "(def ^:dynamic *ctx* :default)", &out);
     rc = mino_repl_feed(repl,
-        "(try (binding (*ctx* :temp) (throw \"oops\")) (catch e e))", &out);
+        "(try (binding [*ctx* :temp] (throw \"oops\")) (catch e e))", &out);
     CHK(rc == MINO_REPL_OK, "try/binding failed");
 
     /* Step 6: verify binding was restored */
@@ -165,11 +165,11 @@ static void test_clone_isolation_deep(void)
 /* Test: pcall inside eval_string (nested C->mino->C->mino) */
 static mino_val_t *prim_safe_divide(mino_state_t *S, mino_val_t *args, mino_env_t *env)
 {
-    (void)env;
     if (!mino_is_cons(args) || !mino_is_cons(mino_cdr(args)))
         return mino_nil(S);
 
-    mino_val_t *fn = mino_env_get(env, "/");
+    /* `/` lives in clojure.core; resolve through eval. */
+    mino_val_t *fn = mino_eval_string(S, "/", env);
     mino_val_t *out = NULL;
     int rc = mino_pcall(S, fn, args, env, &out, NULL);
     if (rc != 0) {

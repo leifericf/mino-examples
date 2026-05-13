@@ -121,7 +121,10 @@ static const char *script =
 int main()
 {
     mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_env_t   *env = mino_env_new(S);
+    /* The sandbox preset excludes host interop; this demo relies on
+     * host/new and friends, so opt in with the HOST cap on top. */
+    mino_install(S, env, MINO_CAP_DEFAULT | MINO_CAP_HOST);
 
     /* Register the EventSource type with constructor, method, getter. */
     mino_host_enable(S);

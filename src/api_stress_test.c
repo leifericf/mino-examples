@@ -381,11 +381,14 @@ static void test_env_clone_diverge(void)
     mino_state_t *S = mino_state_new();
     mino_env_t *env = mino_env_new_default(S);
 
-    mino_eval_string(S, "(def x 1)", env);
+    /* Use env-scoped bindings (mino_env_set), not namespace-scoped
+     * (def): cloning the env produces an independent lexical scope,
+     * but namespace vars are shared across the state. */
+    mino_env_set(S, env, "x", mino_int(S, 1));
     mino_env_t *clone = mino_env_clone(S, env);
 
-    /* Modify clone. */
-    mino_eval_string(S, "(def x 99)", clone);
+    /* Modify clone's binding. */
+    mino_env_set(S, clone, "x", mino_int(S, 99));
 
     /* Original should still have x = 1. */
     mino_val_t *orig_x = mino_eval_string(S, "x", env);
@@ -475,7 +478,10 @@ static void test_pcall_success(void)
     mino_state_t *S = mino_state_new();
     mino_env_t *env = mino_env_new_default(S);
 
-    mino_val_t *fn = mino_env_get(env, "+");
+    /* Core arithmetic prims live in the clojure.core namespace, not
+     * the user env. Resolve through eval so the namespace machinery
+     * looks them up. */
+    mino_val_t *fn = mino_eval_string(S, "+", env);
     ASSERT(fn != NULL, "+ not found");
 
     mino_val_t *args = mino_cons(S, mino_int(S, 1),
@@ -499,7 +505,8 @@ static void test_pcall_error(void)
     mino_state_t *S = mino_state_new();
     mino_env_t *env = mino_env_new_default(S);
 
-    mino_val_t *fn = mino_env_get(env, "/");
+    /* / lives in clojure.core; resolve via eval, not env lookup. */
+    mino_val_t *fn = mino_eval_string(S, "/", env);
     ASSERT(fn != NULL, "/ not found");
 
     mino_val_t *args = mino_cons(S, mino_int(S, 1),
@@ -686,17 +693,23 @@ static void test_module_resolver(void)
 
 static void test_sandbox_no_io(void)
 {
-    TEST("sandbox: core-only env has no I/O");
+    TEST("sandbox: default env has no filesystem reads");
     mino_state_t *S = mino_state_new();
     mino_env_t *env = mino_env_new(S);
     mino_install(S, env, MINO_CAP_DEFAULT);
 
-    /* println should not be available. */
-    mino_val_t *r = mino_eval_string(S, "(println \"hello\")", env);
-    ASSERT(r == NULL, "println should fail in sandbox");
+    /* `slurp` lives in MINO_CAP_IO, which the sandbox preset omits;
+     * `println` is always-on (floor) so it is not the right probe. The
+     * runtime rejects with a capability-disabled message rather than an
+     * unbound-symbol message: the prim stub stays installed but throws
+     * when the cap is off. */
+    mino_val_t *r = mino_eval_string(S, "(slurp \"/etc/hostname\")", env);
+    ASSERT(r == NULL, "slurp should fail in sandbox");
     const char *err = mino_last_error(S);
     ASSERT(err != NULL, "expected error");
-    ASSERT(strstr(err, "unbound") != NULL, "should be unbound");
+    ASSERT(strstr(err, "not installed") != NULL ||
+           strstr(err, "capability")    != NULL,
+           "should mention disabled capability");
 
     mino_env_free(S, env);
     mino_state_free(S);

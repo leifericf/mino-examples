@@ -143,8 +143,10 @@ static void test_gc_multi_env_roots(void)
     int i;
 
     mino_eval_string(S, "(def big-vec (into [] (range 200)))", env1);
-    /* env2 gets a reference to the same big vector */
-    mino_val_t *v = mino_env_get(env1, "big-vec");
+    /* env2 gets a reference to the same big vector. `def` binds the
+     * value into the active namespace (shared across envs); resolve via
+     * eval so the namespace machinery hands us the var's current root. */
+    mino_val_t *v = mino_eval_string(S, "big-vec", env1);
     mino_env_set(S, env2, "shared-vec", v);
 
     /* Free env1 -- the vector should survive because env2 still holds it */
@@ -206,9 +208,15 @@ static void test_eval_string_multi_form_error(void)
     /* div by zero is now throwable -- but without try, it's still fatal */
     CHK(r == NULL, "should have errored");
 
-    /* a should be defined, c should not */
-    CHK(mino_env_get(env, "a") != NULL, "a should exist");
-    CHK(mino_env_get(env, "c") == NULL, "c should not exist");
+    /* a should be defined, c should not. `def` binds into the
+     * active namespace, so probe via eval rather than mino_env_get
+     * (which only sees env-local bindings). */
+    mino_clear_error(S);
+    mino_val_t *a_val = mino_eval_string(S, "a", env);
+    CHK(a_val != NULL, "a should exist");
+    mino_clear_error(S);
+    mino_val_t *c_val = mino_eval_string(S, "c", env);
+    CHK(c_val == NULL, "c should not exist");
 
     mino_env_free(S, env);
     mino_state_free(S);
