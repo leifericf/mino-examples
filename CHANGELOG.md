@@ -40,6 +40,19 @@
   rule applies to teaching material even when the reader is
   permissive.
 
+- Cycle close: two new cookbook chapters anchor the
+  reading-time path:
+  - `src/cookbook/five_minutes.c` — canonical hello-world,
+    state + env construction with the amalgamation, eval, extract,
+    teardown.
+  - `src/cookbook/handle_record_atom_choice.c` — decision tree
+    for "how do I expose my host type to mino script?". Answers
+    the Lua-metatable question with the three Clojure-canon
+    paths: handle (identity-shaped resource), record
+    (value-shaped data), atom (mutable identity).
+  README rewritten to surface the cookbook reading order and the
+  vendored-first distribution philosophy.
+
 - JNI binding: `Java_MinoEmbed_envNew` was still calling the
   removed-in-v0.151 `mino_new(state)` symbol. Replaced with
   `mino_env_new_default(state)`, the canonical Clojure-core +

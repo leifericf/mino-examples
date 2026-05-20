@@ -26,6 +26,8 @@ src/cookbook/build_collections
 src/cookbook/config
 src/cookbook/console
 src/cookbook/error_handling
+src/cookbook/five_minutes
+src/cookbook/handle_record_atom_choice
 src/cookbook/iterate
 src/cookbook/pipeline
 src/cookbook/plugin
