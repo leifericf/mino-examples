@@ -3,9 +3,9 @@
 CC       ?= cc
 CXX      ?= c++
 MINO_INCS := -Imino/src -Imino/src/public -Imino/src/runtime \
-             -Imino/src/gc -Imino/src/eval -Imino/src/collections \
-             -Imino/src/prim -Imino/src/async -Imino/src/interop \
-             -Imino/src/diag -Imino/src/vendor/imath
+             -Imino/src/gc -Imino/src/eval -Imino/src/values \
+             -Imino/src/collections -Imino/src/prim -Imino/src/async \
+             -Imino/src/interop -Imino/src/diag -Imino/src/vendor/imath
 CFLAGS   ?= -std=c99 -Wall -Wpedantic -Wextra -O2 $(MINO_INCS)
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 $(MINO_INCS)
 LDFLAGS  ?=
@@ -16,6 +16,8 @@ MINO_SRCS := $(wildcard mino/src/public/*.c) \
              $(wildcard mino/src/gc/*.c) \
              $(wildcard mino/src/eval/*.c) \
              $(wildcard mino/src/eval/bc/*.c) \
+             $(wildcard mino/src/eval/bc/jit/*.c) \
+             $(wildcard mino/src/values/*.c) \
              $(wildcard mino/src/collections/*.c) \
              $(wildcard mino/src/prim/*.c) \
              $(wildcard mino/src/async/*.c) \
@@ -66,6 +68,7 @@ endef
 $(eval $(call gen-mino-header,src/core.clj,core_mino))
 $(eval $(call gen-mino-header,lib/clojure/string.clj,lib_clojure_string))
 $(eval $(call gen-mino-header,lib/clojure/set.clj,lib_clojure_set))
+$(eval $(call gen-mino-header,lib/clojure/math.clj,lib_clojure_math))
 $(eval $(call gen-mino-header,lib/clojure/walk.clj,lib_clojure_walk))
 $(eval $(call gen-mino-header,lib/clojure/edn.clj,lib_clojure_edn))
 $(eval $(call gen-mino-header,lib/clojure/pprint.clj,lib_clojure_pprint))
@@ -90,6 +93,7 @@ $(eval $(call gen-mino-header,lib/mino/tasks/builtin.clj,lib_mino_tasks_builtin)
 MINO_GEN_HEADERS := mino/src/core_mino.h \
                     mino/src/lib_clojure_string.h \
                     mino/src/lib_clojure_set.h \
+                    mino/src/lib_clojure_math.h \
                     mino/src/lib_clojure_walk.h \
                     mino/src/lib_clojure_edn.h \
                     mino/src/lib_clojure_pprint.h \
