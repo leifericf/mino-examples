@@ -120,10 +120,10 @@ int main(void)
 
     /* Define some convenience commands in mino. */
     mino_eval_string(S,
-        "(def teleport (fn (x y)\n"
+        "(def teleport (fn [x y]\n"
         "  (move (- x (first (pos)))\n"
         "        (- y (nth (pos) 1)))))\n"
-        "(def full-heal (fn () (heal 9999)))\n",
+        "(def full-heal (fn [] (heal 9999)))\n",
         env);
 
     /* Run a scripted demo instead of an interactive loop. */

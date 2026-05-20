@@ -109,7 +109,7 @@ int main(void)
 
     /* ---- Test 5: clone rejects functions ---- */
     {
-        mino_val *fn = mino_eval_string(A, "(fn (x) x)", ea);
+        mino_val *fn = mino_eval_string(A, "(fn [x] x)", ea);
         mino_val *dst;
         ASSERT(fn != NULL, "eval fn");
         dst = mino_clone(B, A, fn);
@@ -130,7 +130,7 @@ int main(void)
     /* ---- Test 7: isolation - mutating in A doesn't affect B's clone ---- */
     {
         mino_val *atom_v = mino_eval_string(A,
-            "(let (a (atom 0)) (reset! a 42) (deref a))", ea);
+            "(let [a (atom 0)] (reset! a 42) (deref a))", ea);
         mino_val *cloned;
         long long i_iso = 0;
         ASSERT(atom_v != NULL && mino_is_int(atom_v), "atom deref");

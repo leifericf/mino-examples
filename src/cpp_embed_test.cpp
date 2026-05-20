@@ -225,7 +225,7 @@ static void test_exception_from_cpp(void)
     MiEnv env(s);
 
     mino_val *fn = mino_eval_string(s,
-        "(fn (x) (if (< x 0) (throw \"negative!\") (* x x)))", env);
+        "(fn [x] (if (< x 0) (throw \"negative!\") (* x x)))", env);
     ASSERT(fn != nullptr, "eval fn failed");
     MiRef fn_ref(s, fn);
 
@@ -280,7 +280,7 @@ static void test_sandboxed_untrusted_code(void)
     ASSERT(val == 4950, "expected 4950");
 
     /* Infinite loop is caught */
-    r = mino_eval_string(s, "(loop (i 0) (recur (+ i 1)))", sandbox);
+    r = mino_eval_string(s, "(loop [i 0] (recur (+ i 1)))", sandbox);
     ASSERT(r == nullptr, "infinite loop should fail");
     const char *err = mino_last_error(s);
     ASSERT(strstr(err, "step limit") != nullptr, "wrong error");

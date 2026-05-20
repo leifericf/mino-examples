@@ -106,7 +106,7 @@ static void test_gc_pin_eval_string_heavy(void)
 
     /* Build a large map, then look up values. */
     mino_val *r = mino_eval_string(S,
-        "(def m (reduce (fn (acc i) (assoc acc (keyword (str \"k\" i)) i))"
+        "(def m (reduce (fn [acc i] (assoc acc (keyword (str \"k\" i)) i))"
         "  {} (range 100)))"
         "(get m :k50)", env);
     ASSERT(r != NULL, "eval failed");
@@ -250,7 +250,7 @@ static void test_step_limit(void)
 
     mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
     mino_val *r = mino_eval_string(S,
-        "(loop (i 0) (recur (+ i 1)))", env);
+        "(loop [i 0] (recur (+ i 1)))", env);
     ASSERT(r == NULL, "expected NULL from step limit");
     const char *err = mino_last_error(S);
     ASSERT(err != NULL, "expected error message");
@@ -337,7 +337,7 @@ static void test_clone_rejects_fn(void)
     mino_env *e1 = mino_env_new_default(s1);
 
     mino_val *v = mino_eval_string(s1,
-        "{:f (fn (x) x)}", e1);
+        "{:f (fn [x] x)}", e1);
     ASSERT(v != NULL, "eval failed");
 
     mino_val *cloned = mino_clone(s2, s1, v);

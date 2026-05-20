@@ -18,19 +18,19 @@
 /* Inline plugin source (normally loaded from a file). */
 static const char *greeter_plugin =
     "(def greet\n"
-    "  (fn (name)\n"
+    "  (fn [name]\n"
     "    (str \"Hello, \" name \"!\")))\n"
     "\n"
     "(def farewell\n"
-    "  (fn (name)\n"
+    "  (fn [name]\n"
     "    (str \"Goodbye, \" name \".\")))";
 
 static const char *math_plugin =
-    "(def square (fn (x) (* x x)))\n"
-    "(def cube   (fn (x) (* x x x)))\n"
-    "(def hypot  (fn (a b)\n"
-    "              (let (a2 (square a)\n"
-    "                    b2 (square b))\n"
+    "(def square (fn [x] (* x x)))\n"
+    "(def cube   (fn [x] (* x x x)))\n"
+    "(def hypot  (fn [a b]\n"
+    "              (let [a2 (square a)\n"
+    "                    b2 (square b)]\n"
     "                (reduce + 0 (list a2 b2)))))\n";
 
 /* Call a named function in env with a single argument. */

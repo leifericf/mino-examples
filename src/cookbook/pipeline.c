@@ -46,8 +46,8 @@ int main(void)
     printf("Over 35:\n");
     result = mino_eval_string(S,
         "(->> employees\n"
-        "     (filter (fn (e) (> (get e :age) 35)))\n"
-        "     (map (fn (e) (get e :name))))",
+        "     (filter (fn [e] (> (get e :age) 35)))\n"
+        "     (map (fn [e] (get e :name))))",
         env);
     if (result != NULL) {
         printf("  ");
@@ -56,7 +56,7 @@ int main(void)
 
     /* Pipeline 2: total salary budget. */
     result = mino_eval_string(S,
-        "(reduce + 0 (map (fn (e) (get e :salary)) employees))",
+        "(reduce + 0 (map (fn [e] (get e :salary)) employees))",
         env);
     if (result != NULL) {
         long long total;
@@ -71,7 +71,7 @@ int main(void)
         "(->> employees\n"
         "     (sort)\n"
         "     (reverse)\n"
-        "     (map (fn (e) (str (get e :name) \": $\" (get e :salary)))))",
+        "     (map (fn [e] (str (get e :name) \": $\" (get e :salary)))))",
         env);
     if (result != NULL) {
         /* Walk the result list and print each line. */
@@ -88,10 +88,10 @@ int main(void)
 
     /* Pipeline 4: group into age brackets using into + map. */
     result = mino_eval_string(S,
-        "(let (senior   (filter (fn (e) (>= (get e :age) 40)) employees)\n"
-        "      junior   (filter (fn (e) (<  (get e :age) 40)) employees))\n"
-        "  {:senior (map (fn (e) (get e :name)) senior)\n"
-        "   :junior (map (fn (e) (get e :name)) junior)})",
+        "(let [senior   (filter (fn [e] (>= (get e :age) 40)) employees)\n"
+        "      junior   (filter (fn [e] (<  (get e :age) 40)) employees)]\n"
+        "  {:senior (map (fn [e] (get e :name)) senior)\n"
+        "   :junior (map (fn [e] (get e :name)) junior)})",
         env);
     if (result != NULL) {
         printf("Age groups: ");

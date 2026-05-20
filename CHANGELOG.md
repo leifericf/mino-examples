@@ -21,6 +21,24 @@
   `mino_gc_stats_out` to clear the function-name collision.
   Every C/C++ example and cookbook chapter in this repo has been
   ported to the new names; the JNI binding likewise.
+  Phase 3: ships a single-file amalgamation under `dist/`.
+  Phase 4: completes the `mino_is_*` / `mino_to_*` grid.
+  Phase 5: adds the Clojure-canon C surface (`mino_meta`,
+  `mino_seq`, `mino_compare`, `mino_hash`, `mino_push_bindings`,
+  `mino_can_clone`).
+  Phase 6: bulk primitive registration via `mino_register_fns`,
+  throw-payload preservation across the runtime, six new
+  `mino_args_parse` specifiers, named-type clone failure
+  diagnostics, `mino_int` capability-conditional doc callout.
+
+- Embedded mino-source canon pass: every `(fn (args) body)`,
+  `(let (...) ...)`, `(loop (...) ...)`, `(doseq (...) ...)`,
+  `(for (...) ...)`, `(when-let (...) ...)`, `(if-let (...) ...)`
+  in C-string literals across the cookbook and stress tests now
+  uses the canonical Clojure vector-binding shape. mino's reader
+  accepts both forms; the cycle's "default to Clojure-canon"
+  rule applies to teaching material even when the reader is
+  permissive.
 
 - JNI binding: `Java_MinoEmbed_envNew` was still calling the
   removed-in-v0.151 `mino_new(state)` symbol. Replaced with

@@ -35,7 +35,7 @@ int main(void)
     /* Evaluate mino source that calls the host function. */
     mino_val *result = mino_eval_string(S,
         "(def prices [100 200 300])\n"
-        "(loop (i 0 total 0.0)\n"
+        "(loop [i 0 total 0.0]\n"
         "  (if (< i (count prices))\n"
         "      (recur (+ i 1) (+ total (add-tax (nth prices i))))\n"
         "      total))\n",

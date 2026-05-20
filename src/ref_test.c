@@ -40,7 +40,7 @@ int main(void)
 
         /* Force several GC cycles by allocating lots of garbage. */
         mino_eval_string(S,
-            "(do (loop (i 0) (if (< i 500) "
+            "(do (loop [i 0] (if (< i 500) "
             "  (do (vec (range 50)) (recur (+ i 1))))))",
             env);
 
@@ -84,7 +84,7 @@ int main(void)
         /* Force GC by allocating garbage. The handle should be collected
          * and its finalizer called since nothing roots it. */
         mino_eval_string(S,
-            "(do (loop (i 0) (if (< i 500) "
+            "(do (loop [i 0] (if (< i 500) "
             "  (do (vec (range 50)) (recur (+ i 1))))))",
             env);
 
@@ -103,7 +103,7 @@ int main(void)
 
         /* Force GC. */
         mino_eval_string(S,
-            "(do (loop (i 0) (if (< i 500) "
+            "(do (loop [i 0] (if (< i 500) "
             "  (do (vec (range 50)) (recur (+ i 1))))))",
             env);
 

@@ -39,7 +39,7 @@ static void test_eval_then_call_lazy(void)
     mino_env *env = mino_env_new_default(S);
 
     mino_val *fn = mino_eval_string(S,
-        "(fn (n) (reduce + 0 (take n (range))))", env);
+        "(fn [n] (reduce + 0 (take n (range))))", env);
     CHK(fn != NULL, "fn creation failed");
 
     mino_ref *fn_ref = mino_ref_new(S, fn);
@@ -118,7 +118,7 @@ static void test_limit_with_lazy(void)
     mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
 
     mino_val *r = mino_eval_string(S,
-        "(loop (i 0) (recur (+ i 1)))", env);
+        "(loop [i 0] (recur (+ i 1)))", env);
     CHK(r == NULL, "should hit step limit");
     const char *err = mino_last_error(S);
     CHK(strstr(err, "step limit") != NULL, "wrong error");

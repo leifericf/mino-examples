@@ -47,7 +47,7 @@ static mino_val *host_balance(mino_state *S, mino_val *args, mino_env *env)
 
 static const char *rules_src =
     "(def discount-tier\n"
-    "  (fn ()\n"
+    "  (fn []\n"
     "    (cond\n"
     "      (> (purchases) 50) :gold\n"
     "      (> (purchases) 10) :silver\n"

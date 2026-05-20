@@ -264,7 +264,7 @@ static void test_call_user_fn(void)
     mino_env *env = mino_env_new_default(S);
 
     mino_val *fn = mino_eval_string(S,
-        "(fn (a b c) (+ (* a b) c))", env);
+        "(fn [a b c] (+ (* a b) c))", env);
     CHK(fn != NULL, "fn creation failed");
     CHK(mino_is_fn(fn), "not a fn");
 
