@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Tracking mino v0.151.1. Picks up the v0.150.0 and v0.151.0
+- Tracking mino v0.382.0 (embedder UX cycle, Phase 1 —
+  cascade-completion). Picks up the v0.150.0 and v0.151.0
   embedding-API revamp — opaque `struct mino_val`, a single
   `mino_install(S, env, caps)` bitmask entry replacing the 22
   per-capability installers, a full type-predicate grid, the
@@ -13,8 +14,14 @@
   plus the v0.151.1 embedding hardening (NULL-arg guards on
   `mino_eval_string` and `mino_read`, sorted-map / sorted-set
   iter, raw thrown payload through `out_ex`, `mino_to_int`
-  bigint round-trip). The cookbook and use-case examples
-  themselves are unchanged.
+  bigint round-trip).
+
+- JNI binding: `Java_MinoEmbed_envNew` was still calling the
+  removed-in-v0.151 `mino_new(state)` symbol. Replaced with
+  `mino_env_new_default(state)`, the canonical Clojure-core +
+  default-capability env-construction entry point. Any host
+  build of `jni/mino_jni.c` against a current mino submodule
+  was failing to link before this change.
 
 - Tracking mino v0.104.0 through v0.149.1. A long stretch of mino
   cycles: bytecode-VM rollout (v0.105.0-v0.114.0), generational

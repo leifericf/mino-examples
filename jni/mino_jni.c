@@ -42,7 +42,8 @@ JNIEXPORT jlong JNICALL
 Java_MinoEmbed_envNew(JNIEnv *jenv, jclass cls, jlong state)
 {
     (void)jenv; (void)cls;
-    return (jlong)(uintptr_t)mino_new((mino_state_t *)(uintptr_t)state);
+    return (jlong)(uintptr_t)mino_env_new_default(
+        (mino_state_t *)(uintptr_t)state);
 }
 
 /* Java_MinoEmbed_envFree */
