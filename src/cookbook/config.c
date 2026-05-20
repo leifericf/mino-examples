@@ -31,10 +31,10 @@ static const char *config_src =
 
 int main(void)
 {
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new(S);
-    mino_val_t *cfg;
-    mino_val_t *val;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new(S);
+    mino_val *cfg;
+    mino_val *val;
 
     /* Core bindings only - no I/O. The config file cannot read files,
      * print, or access the network. */
@@ -75,14 +75,14 @@ int main(void)
     val = mino_eval_string(S, "(get cfg :routes)", env);
     if (val != NULL) {
         long long count;
-        mino_val_t *c = mino_eval_string(S, "(count (get cfg :routes))", env);
+        mino_val *c = mino_eval_string(S, "(count (get cfg :routes))", env);
         if (c != NULL && mino_to_int(c, &count)) {
             long long i;
             printf("routes (%lld):\n", count);
             for (i = 0; i < count; i++) {
                 char expr[128];
-                mino_val_t *route;
-                mino_val_t *path;
+                mino_val *route;
+                mino_val *path;
                 snprintf(expr, sizeof(expr),
                          "(nth (get cfg :routes) %lld)", i);
                 route = mino_eval_string(S, expr, env);

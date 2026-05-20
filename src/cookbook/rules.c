@@ -25,19 +25,19 @@ static customer_t current_customer;
 
 /* Host functions exposed to the rules engine. */
 
-static mino_val_t *host_age(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_age(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)args; (void)env;
     return mino_int(S, current_customer.age);
 }
 
-static mino_val_t *host_purchases(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_purchases(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)args; (void)env;
     return mino_int(S, current_customer.purchases);
 }
 
-static mino_val_t *host_balance(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_balance(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)args; (void)env;
     return mino_float(S, current_customer.balance);
@@ -56,9 +56,9 @@ static const char *rules_src =
 
 int main(void)
 {
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_val_t *result;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_val *result;
 
     /* Register host accessors. */
     mino_register_fn(S, env, "age",       host_age);

@@ -1,5 +1,5 @@
 /*
- * ref_test.c -- exercise mino_ref_t and handle finalizers.
+ * ref_test.c -- exercise mino_ref and handle finalizers.
  *
  * Build:
  *   cc -std=c99 -I.. -o ref_test ref_test.c ../mino.o ../re.o -lm
@@ -27,16 +27,16 @@ static void test_finalizer(void *ptr, const char *tag)
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* ---- Test 1: ref keeps a value alive across GC ---- */
     {
-        mino_val_t *v = mino_eval_string(S,
+        mino_val *v = mino_eval_string(S,
             "(vec (range 100))", env);
         ASSERT(v != NULL, "eval range failed");
 
-        mino_ref_t *r = mino_ref(S, v);
+        mino_ref *r = mino_ref_new(S, v);
 
         /* Force several GC cycles by allocating lots of garbage. */
         mino_eval_string(S,
@@ -45,7 +45,7 @@ int main(void)
             env);
 
         /* The ref'd value should still be alive and correct. */
-        mino_val_t *got = mino_deref(r);
+        mino_val *got = mino_deref(r);
         ASSERT(got != NULL, "deref returned NULL");
         ASSERT(got == v, "deref returned different pointer");
 
@@ -54,13 +54,13 @@ int main(void)
 
     /* ---- Test 2: multiple refs, unref order ---- */
     {
-        mino_val_t *a = mino_int(S, 42);
-        mino_val_t *b = mino_string(S, "hello");
-        mino_val_t *c = mino_float(S, 3.14);
+        mino_val *a = mino_int(S, 42);
+        mino_val *b = mino_string(S, "hello");
+        mino_val *c = mino_float(S, 3.14);
 
-        mino_ref_t *ra = mino_ref(S, a);
-        mino_ref_t *rb = mino_ref(S, b);
-        mino_ref_t *rc = mino_ref(S, c);
+        mino_ref *ra = mino_ref_new(S, a);
+        mino_ref *rb = mino_ref_new(S, b);
+        mino_ref *rc = mino_ref_new(S, c);
 
         /* Unref middle first. */
         mino_unref(S, rb);
@@ -98,8 +98,8 @@ int main(void)
         char *data2 = (char *)malloc(64);
         strcpy(data2, "keep-alive");
 
-        mino_val_t *h = mino_handle_ex(S, data2, "kept", test_finalizer);
-        mino_ref_t *rh = mino_ref(S, h);
+        mino_val *h = mino_handle_ex(S, data2, "kept", test_finalizer);
+        mino_ref *rh = mino_ref_new(S, h);
 
         /* Force GC. */
         mino_eval_string(S,

@@ -26,14 +26,14 @@
  * cleans up the C++ object when the GC collects it. */
 
 struct EventSource {
-    std::vector<mino_val_t *> events;
+    std::vector<mino_val *> events;
     size_t cursor = 0;
 };
 
-static mino_val_t *make_event(mino_state_t *S, const char *type,
+static mino_val *make_event(mino_state *S, const char *type,
                               const char *device, double value, int ts)
 {
-    mino_val_t *ks[4], *vs[4];
+    mino_val *ks[4], *vs[4];
     ks[0] = mino_keyword(S, "type");    vs[0] = mino_keyword(S, type);
     ks[1] = mino_keyword(S, "device");  vs[1] = mino_string(S, device);
     ks[2] = mino_keyword(S, "value");   vs[2] = mino_float(S, value);
@@ -41,8 +41,8 @@ static mino_val_t *make_event(mino_state_t *S, const char *type,
     return mino_map(S, ks, vs, 4);
 }
 
-static mino_val_t *source_new(mino_state_t *S, mino_val_t *,
-                              mino_val_t *, void *)
+static mino_val *source_new(mino_state *S, mino_val *,
+                              mino_val *, void *)
 {
     auto *src = new EventSource;
 
@@ -63,8 +63,8 @@ static mino_val_t *source_new(mino_state_t *S, mino_val_t *,
         [](void *p, const char *) { delete static_cast<EventSource *>(p); });
 }
 
-static mino_val_t *source_next(mino_state_t *S, mino_val_t *target,
-                               mino_val_t *, void *)
+static mino_val *source_next(mino_state *S, mino_val *target,
+                               mino_val *, void *)
 {
     auto *src = static_cast<EventSource *>(mino_handle_ptr(target));
     if (src->cursor >= src->events.size())
@@ -72,8 +72,8 @@ static mino_val_t *source_next(mino_state_t *S, mino_val_t *target,
     return src->events[src->cursor++];
 }
 
-static mino_val_t *source_count(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *, void *)
+static mino_val *source_count(mino_state *S, mino_val *target,
+                                mino_val *, void *)
 {
     auto *src = static_cast<EventSource *>(mino_handle_ptr(target));
     return mino_int(S, (long long)src->cursor);
@@ -120,8 +120,8 @@ static const char *script =
 
 int main()
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new(S);
     /* The sandbox preset excludes host interop; this demo relies on
      * host/new and friends, so opt in with the HOST cap on top. */
     mino_install(S, env, MINO_CAP_DEFAULT | MINO_CAP_HOST);
@@ -132,7 +132,7 @@ int main()
     mino_host_register_method(S, "EventSource", "next", 0, source_next, nullptr);
     mino_host_register_getter(S, "EventSource", "count", source_count, nullptr);
 
-    mino_val_t *result = mino_eval_string(S, script, env);
+    mino_val *result = mino_eval_string(S, script, env);
 
     if (result) {
         printf("result: ");

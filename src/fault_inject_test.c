@@ -22,7 +22,7 @@ static int pass = 0, total = 0;
  * with fail-at-N returns NULL (OOM). Returns N, or 0 if no failure
  * was triggered in the first max_probes allocations.
  */
-static long find_fail_point(mino_state_t *S, mino_env_t *env,
+static long find_fail_point(mino_state *S, mino_env *env,
                             const char *expr, long max_probes)
 {
     long n;
@@ -41,8 +41,8 @@ static long find_fail_point(mino_state_t *S, mino_env_t *env,
 static void test_map_oom(void)
 {
     TEST("map construction OOM returns error, not crash");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(hash-map :a 1 :b 2 :c 3 :d 4)", 200);
@@ -67,8 +67,8 @@ static void test_map_oom(void)
 static void test_vector_oom(void)
 {
     TEST("vector construction OOM returns error, not crash");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(into [] (range 100))", 500);
@@ -91,8 +91,8 @@ static void test_vector_oom(void)
 static void test_binding_oom(void)
 {
     TEST("binding form OOM returns error, not crash");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env,
@@ -116,8 +116,8 @@ static void test_binding_oom(void)
 static void test_regex_oom(void)
 {
     TEST("regex compile OOM returns error, not crash");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     long n;
 
     n = find_fail_point(S, env, "(re-find #\"[a-z]+\" \"hello\")", 200);
@@ -139,10 +139,10 @@ static void test_regex_oom(void)
 static void test_oom_catchable(void)
 {
     TEST("OOM is catchable via try/catch in mino code");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     long n;
-    mino_val_t *r;
+    mino_val *r;
 
     /* Find a fail point for a map operation. */
     n = find_fail_point(S, env, "(hash-map :a 1 :b 2 :c 3 :d 4)", 200);
@@ -171,13 +171,13 @@ static void test_oom_catchable(void)
 static void test_clone_vector_oom(void)
 {
     TEST("clone vector OOM returns NULL, not crash");
-    mino_state_t *src = mino_state_new();
-    mino_state_t *dst = mino_state_new();
-    mino_env_t *se = mino_env_new_default(src);
-    mino_env_t *de = mino_env_new_default(dst);
+    mino_state *src = mino_state_new();
+    mino_state *dst = mino_state_new();
+    mino_env *se = mino_env_new_default(src);
+    mino_env *de = mino_env_new_default(dst);
     long n;
 
-    mino_val_t *v = mino_eval_string(src, "[1 2 3 4 5]", se);
+    mino_val *v = mino_eval_string(src, "[1 2 3 4 5]", se);
     CHK(v != NULL, "eval failed");
 
     /* Find failure point in raw allocation path. */
@@ -193,7 +193,7 @@ static void test_clone_vector_oom(void)
 
     /* Verify recovery: clone succeeds after clearing injection. */
     {
-        mino_val_t *ok = mino_clone(dst, src, v);
+        mino_val *ok = mino_clone(dst, src, v);
         CHK(ok != NULL, "clone should succeed after clearing injection");
     }
 
@@ -208,13 +208,13 @@ static void test_clone_vector_oom(void)
 static void test_clone_map_oom(void)
 {
     TEST("clone map OOM returns NULL, not crash");
-    mino_state_t *src = mino_state_new();
-    mino_state_t *dst = mino_state_new();
-    mino_env_t *se = mino_env_new_default(src);
-    mino_env_t *de = mino_env_new_default(dst);
+    mino_state *src = mino_state_new();
+    mino_state *dst = mino_state_new();
+    mino_env *se = mino_env_new_default(src);
+    mino_env *de = mino_env_new_default(dst);
     long n;
 
-    mino_val_t *v = mino_eval_string(src, "{:a 1 :b 2 :c 3}", se);
+    mino_val *v = mino_eval_string(src, "{:a 1 :b 2 :c 3}", se);
     CHK(v != NULL, "eval failed");
 
     for (n = 1; n <= 20; n++) {
@@ -228,7 +228,7 @@ static void test_clone_map_oom(void)
     CHK(n <= 20, "no failure point found");
 
     {
-        mino_val_t *ok = mino_clone(dst, src, v);
+        mino_val *ok = mino_clone(dst, src, v);
         CHK(ok != NULL, "clone should succeed after clearing injection");
     }
 
@@ -243,8 +243,8 @@ static void test_clone_map_oom(void)
 static void test_repeated_oom_recovery(void)
 {
     TEST("repeated OOM + recovery cycles don't corrupt state");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     int i;
 
     for (i = 0; i < 50; i++) {
@@ -254,7 +254,7 @@ static void test_repeated_oom_recovery(void)
         mino_set_fail_alloc_at(S, 0);
 
         /* Recovery eval must succeed. */
-        mino_val_t *r = mino_eval_string(S, "(+ 1 1)", env);
+        mino_val *r = mino_eval_string(S, "(+ 1 1)", env);
         CHK(r != NULL, "recovery eval failed after repeated OOM");
     }
 

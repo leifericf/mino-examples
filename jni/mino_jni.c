@@ -15,7 +15,7 @@
 /* Capture printed representation into a C string. */
 static char print_buf[4096];
 
-static void val_to_string(mino_state_t *S, const mino_val_t *v)
+static void val_to_string(mino_state *S, const mino_val *v)
 {
     FILE *f = tmpfile();
     if (!f) { print_buf[0] = '\0'; return; }
@@ -43,7 +43,7 @@ Java_MinoEmbed_envNew(JNIEnv *jenv, jclass cls, jlong state)
 {
     (void)jenv; (void)cls;
     return (jlong)(uintptr_t)mino_env_new_default(
-        (mino_state_t *)(uintptr_t)state);
+        (mino_state *)(uintptr_t)state);
 }
 
 /* Java_MinoEmbed_envFree */
@@ -51,8 +51,8 @@ JNIEXPORT void JNICALL
 Java_MinoEmbed_envFree(JNIEnv *jenv, jclass cls, jlong state, jlong env)
 {
     (void)jenv; (void)cls;
-    mino_env_free((mino_state_t *)(uintptr_t)state,
-                  (mino_env_t *)(uintptr_t)env);
+    mino_env_free((mino_state *)(uintptr_t)state,
+                  (mino_env *)(uintptr_t)env);
 }
 
 /* Java_MinoEmbed_stateFree */
@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL
 Java_MinoEmbed_stateFree(JNIEnv *jenv, jclass cls, jlong state)
 {
     (void)jenv; (void)cls;
-    mino_state_free((mino_state_t *)(uintptr_t)state);
+    mino_state_free((mino_state *)(uintptr_t)state);
 }
 
 /* Java_MinoEmbed_evalString */
@@ -69,11 +69,11 @@ Java_MinoEmbed_evalString(JNIEnv *jenv, jclass cls,
                           jlong state, jstring src, jlong env)
 {
     (void)cls;
-    mino_state_t *S = (mino_state_t *)(uintptr_t)state;
-    mino_env_t   *E = (mino_env_t *)(uintptr_t)env;
+    mino_state *S = (mino_state *)(uintptr_t)state;
+    mino_env   *E = (mino_env *)(uintptr_t)env;
     const char *csrc = (*jenv)->GetStringUTFChars(jenv, src, NULL);
 
-    mino_val_t *result = mino_eval_string(S, csrc, E);
+    mino_val *result = mino_eval_string(S, csrc, E);
     (*jenv)->ReleaseStringUTFChars(jenv, src, csrc);
 
     if (result == NULL)
@@ -90,6 +90,6 @@ JNIEXPORT jstring JNICALL
 Java_MinoEmbed_lastError(JNIEnv *jenv, jclass cls, jlong state)
 {
     (void)cls;
-    const char *err = mino_last_error((mino_state_t *)(uintptr_t)state);
+    const char *err = mino_last_error((mino_state *)(uintptr_t)state);
     return err ? (*jenv)->NewStringUTF(jenv, err) : NULL;
 }

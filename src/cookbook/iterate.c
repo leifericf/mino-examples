@@ -18,9 +18,9 @@
 #  include <alloca.h>
 #endif
 
-static long long count_seq(mino_state_t *S, mino_val_t *coll)
+static long long count_seq(mino_state *S, mino_val *coll)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     long long n = 0;
     mino_iter_init(S, it, coll);
     while (mino_iter_next(it, NULL, NULL)) n++;
@@ -28,11 +28,11 @@ static long long count_seq(mino_state_t *S, mino_val_t *coll)
     return n;
 }
 
-static long long sum_seq(mino_state_t *S, mino_val_t *coll)
+static long long sum_seq(mino_state *S, mino_val *coll)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     long long total = 0, x = 0;
-    mino_val_t *v;
+    mino_val *v;
     mino_iter_init(S, it, coll);
     while (mino_iter_next(it, &v, NULL)) {
         if (mino_to_int(v, &x)) total += x;
@@ -43,22 +43,22 @@ static long long sum_seq(mino_state_t *S, mino_val_t *coll)
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Vector walk: out_k is the element, out_v is NULL. */
     {
-        mino_val_t *vec = mino_eval_string(S, "[10 20 30 40 50]", env);
+        mino_val *vec = mino_eval_string(S, "[10 20 30 40 50]", env);
         printf("vector count = %lld\n", count_seq(S, vec));   /* 5 */
         printf("vector sum   = %lld\n", sum_seq(S, vec));     /* 150 */
     }
 
     /* Map walk: both out_k and out_v populated, insertion order. */
     {
-        mino_val_t *m = mino_eval_string(S,
+        mino_val *m = mino_eval_string(S,
             "{:a 1 :b 2 :c 3}", env);
-        mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
-        mino_val_t  *k, *v;
+        mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
+        mino_val  *k, *v;
         mino_iter_init(S, it, m);
         printf("map entries:\n");
         while (mino_iter_next(it, &k, &v)) {
@@ -73,13 +73,13 @@ int main(void)
 
     /* Lazy seq walk: forced on demand. */
     {
-        mino_val_t *r = mino_eval_string(S, "(range 1 11)", env);
+        mino_val *r = mino_eval_string(S, "(range 1 11)", env);
         printf("lazy sum 1..10 = %lld\n", sum_seq(S, r));     /* 55 */
     }
 
     /* Cons list walk. */
     {
-        mino_val_t *lst = mino_cons(S, mino_int(S, 7),
+        mino_val *lst = mino_cons(S, mino_int(S, 7),
                           mino_cons(S, mino_int(S, 8),
                           mino_cons(S, mino_int(S, 9), mino_nil(S))));
         printf("list sum     = %lld\n", sum_seq(S, lst));     /* 24 */

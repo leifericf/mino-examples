@@ -33,8 +33,8 @@ struct Task {
 static std::vector<Task> tasks;
 
 /* Host function: create a task, return its index. */
-static mino_val_t *host_create_task(mino_state_t *S, mino_val_t *args,
-                                    mino_env_t *)
+static mino_val *host_create_task(mino_state *S, mino_val *args,
+                                    mino_env *)
 {
     const char *name;
     size_t len;
@@ -46,8 +46,8 @@ static mino_val_t *host_create_task(mino_state_t *S, mino_val_t *args,
 }
 
 /* Host function: run a task (simulated). */
-static mino_val_t *host_run_task(mino_state_t *S, mino_val_t *args,
-                                 mino_env_t *)
+static mino_val *host_run_task(mino_state *S, mino_val *args,
+                                 mino_env *)
 {
     long long id;
     if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &id))
@@ -60,8 +60,8 @@ static mino_val_t *host_run_task(mino_state_t *S, mino_val_t *args,
 }
 
 /* Host function: get task status as a map. */
-static mino_val_t *host_task_status(mino_state_t *S, mino_val_t *args,
-                                    mino_env_t *)
+static mino_val *host_task_status(mino_state *S, mino_val *args,
+                                    mino_env *)
 {
     long long id;
     if (!mino_is_cons(args) || !mino_to_int(mino_car(args), &id))
@@ -69,7 +69,7 @@ static mino_val_t *host_task_status(mino_state_t *S, mino_val_t *args,
     if (id < 0 || (size_t)id >= tasks.size())
         return mino_nil(S);
     auto &t = tasks[(size_t)id];
-    mino_val_t *ks[3], *vs[3];
+    mino_val *ks[3], *vs[3];
     ks[0] = mino_keyword(S, "name");   vs[0] = mino_string(S, t.name.c_str());
     ks[1] = mino_keyword(S, "status"); vs[1] = mino_keyword(S, t.status.c_str());
     ks[2] = mino_keyword(S, "result"); vs[2] = mino_string(S, t.result.c_str());
@@ -116,15 +116,15 @@ static const char *script =
 
 int main()
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Register task primitives. */
     mino_register_fn(S, env, "create-task",  host_create_task);
     mino_register_fn(S, env, "run-task",     host_run_task);
     mino_register_fn(S, env, "task-status",  host_task_status);
 
-    mino_val_t *result = mino_eval_string(S, script, env);
+    mino_val *result = mino_eval_string(S, script, env);
 
     if (result) {
         printf("workflow result:\n");

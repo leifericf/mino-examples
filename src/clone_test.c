@@ -17,11 +17,11 @@
 #  include <alloca.h>
 #endif
 
-static size_t count_collection(mino_state_t *S, const mino_val_t *v)
+static size_t count_collection(mino_state *S, const mino_val *v)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     size_t n = 0;
-    mino_iter_init(S, it, (mino_val_t *)v);
+    mino_iter_init(S, it, (mino_val *)v);
     while (mino_iter_next(it, NULL, NULL)) n++;
     mino_iter_done(it);
     return n;
@@ -33,14 +33,14 @@ static size_t count_collection(mino_state_t *S, const mino_val_t *v)
 
 int main(void)
 {
-    mino_state_t *A = mino_state_new();
-    mino_state_t *B = mino_state_new();
-    mino_env_t *ea  = mino_env_new_default(A);
-    mino_env_t *eb  = mino_env_new_default(B);
+    mino_state *A = mino_state_new();
+    mino_state *B = mino_state_new();
+    mino_env *ea  = mino_env_new_default(A);
+    mino_env *eb  = mino_env_new_default(B);
 
     /* ---- Test 1: clone primitives ---- */
     {
-        mino_val_t *v;
+        mino_val *v;
 
         v = mino_clone(B, A, mino_nil(A));
         ASSERT(v != NULL && mino_is_nil(v), "nil clone");
@@ -74,8 +74,8 @@ int main(void)
 
     /* ---- Test 2: clone a vector ---- */
     {
-        mino_val_t *src = mino_eval_string(A, "(vec (range 10))", ea);
-        mino_val_t *dst;
+        mino_val *src = mino_eval_string(A, "(vec (range 10))", ea);
+        mino_val *dst;
         ASSERT(src != NULL, "eval range");
         dst = mino_clone(B, A, src);
         ASSERT(dst != NULL, "vector clone not null");
@@ -85,9 +85,9 @@ int main(void)
 
     /* ---- Test 3: clone a map ---- */
     {
-        mino_val_t *src = mino_eval_string(A,
+        mino_val *src = mino_eval_string(A,
             "(hash-map :a 1 :b 2 :c 3)", ea);
-        mino_val_t *dst;
+        mino_val *dst;
         ASSERT(src != NULL, "eval map");
         dst = mino_clone(B, A, src);
         ASSERT(dst != NULL, "map clone not null");
@@ -97,9 +97,9 @@ int main(void)
 
     /* ---- Test 4: clone a set ---- */
     {
-        mino_val_t *src = mino_eval_string(A,
+        mino_val *src = mino_eval_string(A,
             "(hash-set 1 2 3 4 5)", ea);
-        mino_val_t *dst;
+        mino_val *dst;
         ASSERT(src != NULL, "eval set");
         dst = mino_clone(B, A, src);
         ASSERT(dst != NULL, "set clone not null");
@@ -109,8 +109,8 @@ int main(void)
 
     /* ---- Test 5: clone rejects functions ---- */
     {
-        mino_val_t *fn = mino_eval_string(A, "(fn (x) x)", ea);
-        mino_val_t *dst;
+        mino_val *fn = mino_eval_string(A, "(fn (x) x)", ea);
+        mino_val *dst;
         ASSERT(fn != NULL, "eval fn");
         dst = mino_clone(B, A, fn);
         ASSERT(dst == NULL, "fn clone should fail");
@@ -118,9 +118,9 @@ int main(void)
 
     /* ---- Test 6: clone nested structure ---- */
     {
-        mino_val_t *src = mino_eval_string(A,
+        mino_val *src = mino_eval_string(A,
             "(list (vec (range 3)) {:a 1} #{:x :y})", ea);
-        mino_val_t *dst;
+        mino_val *dst;
         ASSERT(src != NULL, "eval nested");
         dst = mino_clone(B, A, src);
         ASSERT(dst != NULL, "nested clone not null");
@@ -129,9 +129,9 @@ int main(void)
 
     /* ---- Test 7: isolation - mutating in A doesn't affect B's clone ---- */
     {
-        mino_val_t *atom_v = mino_eval_string(A,
+        mino_val *atom_v = mino_eval_string(A,
             "(let (a (atom 0)) (reset! a 42) (deref a))", ea);
-        mino_val_t *cloned;
+        mino_val *cloned;
         long long i_iso = 0;
         ASSERT(atom_v != NULL && mino_is_int(atom_v), "atom deref");
         /* Clone the integer result (not the atom). */

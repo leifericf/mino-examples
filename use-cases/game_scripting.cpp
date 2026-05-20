@@ -44,15 +44,15 @@ static int find_entity(const char *name, size_t len)
 }
 
 /* Return an entity as a mino map snapshot. */
-static mino_val_t *entity_to_map(mino_state_t *S, const Entity &e)
+static mino_val *entity_to_map(mino_state *S, const Entity &e)
 {
     /* Build tags vector. */
-    std::vector<mino_val_t *> tag_vals;
+    std::vector<mino_val *> tag_vals;
     for (auto &t : e.tags)
         tag_vals.push_back(mino_keyword(S, t.c_str()));
-    mino_val_t *tags = mino_vector(S, tag_vals.data(), tag_vals.size());
+    mino_val *tags = mino_vector(S, tag_vals.data(), tag_vals.size());
 
-    mino_val_t *ks[5], *vs[5];
+    mino_val *ks[5], *vs[5];
     ks[0] = mino_keyword(S, "name"); vs[0] = mino_string(S, e.name.c_str());
     ks[1] = mino_keyword(S, "x");    vs[1] = mino_float(S, e.x);
     ks[2] = mino_keyword(S, "y");    vs[2] = mino_float(S, e.y);
@@ -62,8 +62,8 @@ static mino_val_t *entity_to_map(mino_state_t *S, const Entity &e)
 }
 
 /* Host function: look up entity by name, return snapshot. */
-static mino_val_t *host_entity(mino_state_t *S, mino_val_t *args,
-                               mino_env_t *)
+static mino_val *host_entity(mino_state *S, mino_val *args,
+                               mino_env *)
 {
     const char *name;
     size_t len;
@@ -76,25 +76,25 @@ static mino_val_t *host_entity(mino_state_t *S, mino_val_t *args,
 }
 
 /* Host function: list all entities as a vector of maps. */
-static mino_val_t *host_entities(mino_state_t *S, mino_val_t *,
-                                 mino_env_t *)
+static mino_val *host_entities(mino_state *S, mino_val *,
+                                 mino_env *)
 {
-    std::vector<mino_ref_t *> refs;
+    std::vector<mino_ref *> refs;
     for (auto &e : world)
-        refs.push_back(mino_ref(S, entity_to_map(S, e)));
+        refs.push_back(mino_ref_new(S, entity_to_map(S, e)));
 
-    std::vector<mino_val_t *> items;
+    std::vector<mino_val *> items;
     for (auto *r : refs)
         items.push_back(mino_deref(r));
-    mino_val_t *result = mino_vector(S, items.data(), items.size());
+    mino_val *result = mino_vector(S, items.data(), items.size());
     for (auto *r : refs)
         mino_unref(S, r);
     return result;
 }
 
 /* Host function: move an entity by dx, dy. */
-static mino_val_t *host_move(mino_state_t *S, mino_val_t *args,
-                             mino_env_t *)
+static mino_val *host_move(mino_state *S, mino_val *args,
+                             mino_env *)
 {
     const char *name;
     size_t len;
@@ -113,8 +113,8 @@ static mino_val_t *host_move(mino_state_t *S, mino_val_t *args,
 }
 
 /* Host function: apply damage to an entity. */
-static mino_val_t *host_damage(mino_state_t *S, mino_val_t *args,
-                               mino_env_t *)
+static mino_val *host_damage(mino_state *S, mino_val *args,
+                               mino_env *)
 {
     const char *name;
     size_t len;
@@ -187,8 +187,8 @@ int main()
         {"dragon",   50.0, 50.0, 500, 500, {"hostile", "boss"}},
     };
 
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Step limit: protect against runaway player scripts. */
     mino_set_limit(S, MINO_LIMIT_STEPS, 100000);
@@ -199,7 +199,7 @@ int main()
     mino_register_fn(S, env, "move-entity",   host_move);
     mino_register_fn(S, env, "damage-entity", host_damage);
 
-    mino_val_t *result = mino_eval_string(S, script, env);
+    mino_val *result = mino_eval_string(S, script, env);
     if (!result)
         fprintf(stderr, "error: %s\n", mino_last_error(S));
 

@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 /* A host function exposed to mino as (add-tax amount). */
-static mino_val_t *host_add_tax(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_add_tax(mino_state *S, mino_val *args, mino_env *env)
 {
     long long amount;
     (void)env;
@@ -26,14 +26,14 @@ static mino_val_t *host_add_tax(mino_state_t *S, mino_val_t *args, mino_env_t *e
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);       /* env + core in one call */
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);       /* env + core in one call */
 
     /* Register a host-defined function. */
     mino_register_fn(S, env, "add-tax", host_add_tax);
 
     /* Evaluate mino source that calls the host function. */
-    mino_val_t *result = mino_eval_string(S,
+    mino_val *result = mino_eval_string(S,
         "(def prices [100 200 300])\n"
         "(loop (i 0 total 0.0)\n"
         "  (if (< i (count prices))\n"
@@ -54,8 +54,8 @@ int main(void)
     /* Demonstrate the in-process REPL handle: feed lines one at a time,
      * collecting results as complete forms become available. */
     {
-        mino_repl_t *repl = mino_repl_new(S, env);
-        mino_val_t  *out  = NULL;
+        mino_repl *repl = mino_repl_new(S, env);
+        mino_val  *out  = NULL;
         int          rc;
 
         /* Single-line form. */

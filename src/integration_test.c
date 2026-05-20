@@ -15,11 +15,11 @@
 #  include <alloca.h>
 #endif
 
-static size_t count_collection(mino_state_t *S, const mino_val_t *v)
+static size_t count_collection(mino_state *S, const mino_val *v)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     size_t n = 0;
-    mino_iter_init(S, it, (mino_val_t *)v);
+    mino_iter_init(S, it, (mino_val *)v);
     while (mino_iter_next(it, NULL, NULL)) n++;
     mino_iter_done(it);
     return n;
@@ -35,21 +35,21 @@ static int pass = 0, total = 0;
 static void test_eval_then_call_lazy(void)
 {
     TEST("eval defines fn using lazy seq, C calls it via mino_call");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
-    mino_val_t *fn = mino_eval_string(S,
+    mino_val *fn = mino_eval_string(S,
         "(fn (n) (reduce + 0 (take n (range))))", env);
     CHK(fn != NULL, "fn creation failed");
 
-    mino_ref_t *fn_ref = mino_ref(S, fn);
+    mino_ref *fn_ref = mino_ref_new(S, fn);
 
     /* Call it from C with different values */
     long long results[] = {0, 0, 1, 3, 6, 10};
     int i;
     for (i = 0; i <= 5; i++) {
-        mino_val_t *args = mino_cons(S, mino_int(S, i), mino_nil(S));
-        mino_val_t *r = mino_call(S, mino_deref(fn_ref), args, env);
+        mino_val *args = mino_cons(S, mino_int(S, i), mino_nil(S));
+        mino_val *r = mino_call(S, mino_deref(fn_ref), args, env);
         CHK(r != NULL, "call failed");
         long long v;
         CHK(mino_to_int(r, &v), "not int");
@@ -66,10 +66,10 @@ static void test_eval_then_call_lazy(void)
 static void test_repl_complex_session(void)
 {
     TEST("REPL: multi-step session with atoms, binding, try/catch");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_repl_t *repl = mino_repl_new(S, env);
-    mino_val_t *out = NULL;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_repl *repl = mino_repl_new(S, env);
+    mino_val *out = NULL;
 
     /* Step 1: define an atom */
     mino_repl_feed(repl, "(def counter (atom 0))", &out);
@@ -110,14 +110,14 @@ static void test_repl_complex_session(void)
 static void test_limit_with_lazy(void)
 {
     TEST("Step limit stops lazy sequence realization mid-stream");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Set a tight step limit. Use a loop/recur form (not lazy) so
      * the step limit check fires in eval_impl and returns NULL. */
     mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
 
-    mino_val_t *r = mino_eval_string(S,
+    mino_val *r = mino_eval_string(S,
         "(loop (i 0) (recur (+ i 1)))", env);
     CHK(r == NULL, "should hit step limit");
     const char *err = mino_last_error(S);
@@ -137,20 +137,20 @@ static void test_limit_with_lazy(void)
 static void test_clone_isolation_deep(void)
 {
     TEST("Cloned value is truly independent: modify dst, src unchanged");
-    mino_state_t *src = mino_state_new();
-    mino_state_t *dst = mino_state_new();
-    mino_env_t *se = mino_env_new_default(src);
-    mino_env_t *de = mino_env_new_default(dst);
+    mino_state *src = mino_state_new();
+    mino_state *dst = mino_state_new();
+    mino_env *se = mino_env_new_default(src);
+    mino_env *de = mino_env_new_default(dst);
 
-    mino_val_t *v = mino_eval_string(src, "[1 2 3]", se);
+    mino_val *v = mino_eval_string(src, "[1 2 3]", se);
     CHK(v != NULL, "eval failed");
 
-    mino_val_t *cloned = mino_clone(dst, src, v);
+    mino_val *cloned = mino_clone(dst, src, v);
     CHK(cloned != NULL, "clone failed");
 
     /* Modify in dst by conj'ing */
     mino_env_set(dst, de, "data", cloned);
-    mino_val_t *modified = mino_eval_string(dst, "(conj data 4)", de);
+    mino_val *modified = mino_eval_string(dst, "(conj data 4)", de);
     CHK(modified != NULL, "conj failed");
     CHK(count_collection(dst, modified) == 4, "modified should have 4");
 
@@ -163,14 +163,14 @@ static void test_clone_isolation_deep(void)
 }
 
 /* Test: pcall inside eval_string (nested C->mino->C->mino) */
-static mino_val_t *prim_safe_divide(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *prim_safe_divide(mino_state *S, mino_val *args, mino_env *env)
 {
     if (!mino_is_cons(args) || !mino_is_cons(mino_cdr(args)))
         return mino_nil(S);
 
     /* `/` lives in clojure.core; resolve through eval. */
-    mino_val_t *fn = mino_eval_string(S, "/", env);
-    mino_val_t *out = NULL;
+    mino_val *fn = mino_eval_string(S, "/", env);
+    mino_val *out = NULL;
     int rc = mino_pcall(S, fn, args, env, &out, NULL);
     if (rc != 0) {
         return mino_string(S, "div-error");
@@ -181,13 +181,13 @@ static mino_val_t *prim_safe_divide(mino_state_t *S, mino_val_t *args, mino_env_
 static void test_pcall_inside_eval(void)
 {
     TEST("pcall from C primitive called during mino eval");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     mino_register_fn(S, env, "safe-divide", prim_safe_divide);
 
     /* Normal case: 10 / 2 = 5 (integer division) */
-    mino_val_t *r = mino_eval_string(S, "(safe-divide 10 2)", env);
+    mino_val *r = mino_eval_string(S, "(safe-divide 10 2)", env);
     CHK(r != NULL, "eval failed");
     long long v;
     CHK(mino_to_int(r, &v), "not int");
@@ -210,8 +210,8 @@ static void test_pcall_inside_eval(void)
 static void test_module_with_macros(void)
 {
     TEST("Module loading: macro defined in module used by caller");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Write a module that defines a macro */
     FILE *f = fopen("/tmp/mino_macro_mod.clj", "w");
@@ -222,7 +222,7 @@ static void test_module_with_macros(void)
 
     mino_set_resolver(S, NULL, NULL);
     /* Load directly since we know the path */
-    mino_val_t *r = mino_load_file(S, "/tmp/mino_macro_mod.clj", env);
+    mino_val *r = mino_load_file(S, "/tmp/mino_macro_mod.clj", env);
     CHK(r != NULL, "load failed");
 
     /* Use the macro */
@@ -244,23 +244,23 @@ static void test_module_with_macros(void)
 static void test_gc_stress_integration(void)
 {
     TEST("GC: interleaved ref/eval/clone under allocation pressure");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_env_new_default(s1);
-    mino_env_t *e2 = mino_env_new_default(s2);
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
+    mino_env *e1 = mino_env_new_default(s1);
+    mino_env *e2 = mino_env_new_default(s2);
     int i;
 
     for (i = 0; i < 100; i++) {
         /* Build value in s1 */
-        mino_val_t *v = mino_eval_string(s1,
+        mino_val *v = mino_eval_string(s1,
             "(hash-map :i 0 :data (into [] (range 20)))", e1);
         CHK(v != NULL, "eval in s1 failed");
 
         /* Ref it */
-        mino_ref_t *ref = mino_ref(s1, v);
+        mino_ref *ref = mino_ref_new(s1, v);
 
         /* Clone to s2 */
-        mino_val_t *cloned = mino_clone(s2, s1, mino_deref(ref));
+        mino_val *cloned = mino_clone(s2, s1, mino_deref(ref));
         CHK(cloned != NULL, "clone failed");
 
         /* Do more allocation in both states */
@@ -294,13 +294,13 @@ static void test_finalizer_on_state_free(void)
 {
     TEST("Handle finalizers all run on mino_state_free");
     fin_idx = 0;
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     static int ids[5] = {1, 2, 3, 4, 5};
     int i;
 
     for (i = 0; i < 5; i++) {
-        mino_val_t *h = mino_handle_ex(S, &ids[i], "test", ordered_finalizer);
+        mino_val *h = mino_handle_ex(S, &ids[i], "test", ordered_finalizer);
         char name[16];
         snprintf(name, sizeof(name), "__h%d", i);
         mino_env_set(S, env, name, h);

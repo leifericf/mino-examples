@@ -16,7 +16,7 @@
 #include "mino.h"
 #include <stdio.h>
 
-static void report_diag(mino_state_t *S, const char *banner)
+static void report_diag(mino_state *S, const char *banner)
 {
     const char *msg  = mino_last_error(S);
     const char *kind = mino_error_kind(S);
@@ -30,12 +30,12 @@ static void report_diag(mino_state_t *S, const char *banner)
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Read a malformed form: classified as a reader error. */
     {
-        mino_val_t *r = mino_eval_string(S, "(+ 1", env);
+        mino_val *r = mino_eval_string(S, "(+ 1", env);
         printf("\n[unbalanced parens] r = %s\n",
                r == NULL ? "NULL (expected)" : "non-NULL");
         report_diag(S, "structured access:");
@@ -43,7 +43,7 @@ int main(void)
 
     /* Type error from arithmetic: classified eval/type. */
     {
-        mino_val_t *r = mino_eval_string(S, "(+ 1 :two)", env);
+        mino_val *r = mino_eval_string(S, "(+ 1 :two)", env);
         printf("\n[type error] r = %s\n",
                r == NULL ? "NULL (expected)" : "non-NULL");
         report_diag(S, "structured access:");
@@ -53,8 +53,8 @@ int main(void)
      * payload (the value the user passed to (throw ...)) is surfaced
      * directly instead of via the diagnostic round-trip. */
     {
-        mino_val_t *out = NULL;
-        mino_val_t *ex  = NULL;
+        mino_val *out = NULL;
+        mino_val *ex  = NULL;
         int rc = mino_eval_string_ex(S,
             "(throw (ex-info \"bad input\" {:value -1}))",
             env, &out, &ex);
@@ -68,8 +68,8 @@ int main(void)
 
     /* Successful protected eval distinguishes "real nil" from "error". */
     {
-        mino_val_t *out = NULL;
-        mino_val_t *ex  = NULL;
+        mino_val *out = NULL;
+        mino_val *ex  = NULL;
         int rc = mino_eval_string_ex(S, "nil", env, &out, &ex);
         printf("\n[pcall returns nil] rc = %d, out = %p, ex = %p\n",
                rc, (void *)out, (void *)ex);

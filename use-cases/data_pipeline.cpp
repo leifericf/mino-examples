@@ -30,9 +30,9 @@ struct Measurement {
     int         ts;
 };
 
-static mino_val_t *make_measurement(mino_state_t *S, const Measurement &m)
+static mino_val *make_measurement(mino_state *S, const Measurement &m)
 {
-    mino_val_t *ks[4], *vs[4];
+    mino_val *ks[4], *vs[4];
     ks[0] = mino_keyword(S, "metric"); vs[0] = mino_keyword(S, m.metric);
     ks[1] = mino_keyword(S, "host");   vs[1] = mino_string(S, m.host);
     ks[2] = mino_keyword(S, "value");  vs[2] = mino_float(S, m.value);
@@ -78,8 +78,8 @@ static const char *script =
 
 int main()
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Simulated metrics batch from a monitoring agent. */
     std::vector<Measurement> batch = {
@@ -98,11 +98,11 @@ int main()
     /* Push data into mino as a vector of maps.
      * Each record is rooted via mino_ref so the GC cannot collect
      * earlier records while later ones are still being allocated. */
-    std::vector<mino_ref_t *> refs;
+    std::vector<mino_ref *> refs;
     for (auto &m : batch)
-        refs.push_back(mino_ref(S, make_measurement(S, m)));
+        refs.push_back(mino_ref_new(S, make_measurement(S, m)));
 
-    std::vector<mino_val_t *> records;
+    std::vector<mino_val *> records;
     for (auto *r : refs)
         records.push_back(mino_deref(r));
     mino_env_set(S, env, "data",
@@ -111,7 +111,7 @@ int main()
         mino_unref(S, r);
 
     /* Run the pipeline. */
-    mino_val_t *result = mino_eval_string(S, script, env);
+    mino_val *result = mino_eval_string(S, script, env);
 
     if (result) {
         printf("summaries:\n");

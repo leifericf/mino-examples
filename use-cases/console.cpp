@@ -22,15 +22,15 @@
  * exposes read/write access through registered functions. */
 
 struct AppState {
-    struct Entry { char key[64]; mino_val_t *val; };
+    struct Entry { char key[64]; mino_val *val; };
     Entry entries[64];
     int   count = 0;
 };
 
 static AppState app;
 
-static mino_val_t *host_get(mino_state_t *S, mino_val_t *args,
-                            mino_env_t *)
+static mino_val *host_get(mino_state *S, mino_val *args,
+                            mino_env *)
 {
     const char *key;
     size_t len;
@@ -45,8 +45,8 @@ static mino_val_t *host_get(mino_state_t *S, mino_val_t *args,
     return mino_nil(S);
 }
 
-static mino_val_t *host_put(mino_state_t *S, mino_val_t *args,
-                            mino_env_t *)
+static mino_val *host_put(mino_state *S, mino_val *args,
+                            mino_env *)
 {
     const char *key;
     size_t len;
@@ -54,7 +54,7 @@ static mino_val_t *host_put(mino_state_t *S, mino_val_t *args,
         !mino_to_string(mino_car(args), &key, &len) ||
         !mino_is_cons(mino_cdr(args)))
         return mino_nil(S);
-    mino_val_t *val = mino_car(mino_cdr(args));
+    mino_val *val = mino_car(mino_cdr(args));
 
     /* Update existing or append. */
     for (int i = 0; i < app.count; i++) {
@@ -72,19 +72,19 @@ static mino_val_t *host_put(mino_state_t *S, mino_val_t *args,
     return val;
 }
 
-static mino_val_t *host_keys(mino_state_t *S, mino_val_t *,
-                             mino_env_t *)
+static mino_val *host_keys(mino_state *S, mino_val *,
+                             mino_env *)
 {
-    mino_val_t *items[64];
+    mino_val *items[64];
     for (int i = 0; i < app.count; i++)
         items[i] = mino_string(S, app.entries[i].key);
     return mino_vector(S, items, (size_t)app.count);
 }
 
-static mino_val_t *host_dump(mino_state_t *S, mino_val_t *,
-                             mino_env_t *)
+static mino_val *host_dump(mino_state *S, mino_val *,
+                             mino_env *)
 {
-    mino_val_t *ks[64], *vs[64];
+    mino_val *ks[64], *vs[64];
     for (int i = 0; i < app.count; i++) {
         ks[i] = mino_string(S, app.entries[i].key);
         vs[i] = app.entries[i].val;
@@ -112,8 +112,8 @@ static const char *prelude =
 
 int main()
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Step limit: prevent runaway scripts. */
     mino_set_limit(S, MINO_LIMIT_STEPS, 100000);
@@ -145,7 +145,7 @@ int main()
 
     for (auto *cmd : commands) {
         printf("> %s\n", cmd);
-        mino_val_t *result = mino_eval_string(S, cmd, env);
+        mino_val *result = mino_eval_string(S, cmd, env);
         if (result) {
             mino_println(S, result);
         } else {
@@ -156,7 +156,7 @@ int main()
 
     /* Demonstrate step limit enforcement. */
     printf("> (loop [] (recur))   ; infinite loop\n");
-    mino_val_t *r = mino_eval_string(S, "(loop [] (recur))", env);
+    mino_val *r = mino_eval_string(S, "(loop [] (recur))", env);
     if (!r)
         printf("error: %s\n", mino_last_error(S));
 

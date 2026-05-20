@@ -27,16 +27,16 @@ static entity_t player = { 0.0, 0.0, 100, 100, "player" };
 
 /* --- Host functions ----------------------------------------------------- */
 
-static mino_val_t *host_pos(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_pos(mino_state *S, mino_val *args, mino_env *env)
 {
-    mino_val_t *items[2];
+    mino_val *items[2];
     (void)args; (void)env;
     items[0] = mino_float(S, player.x);
     items[1] = mino_float(S, player.y);
     return mino_vector(S, items, 2);
 }
 
-static mino_val_t *host_move(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_move(mino_state *S, mino_val *args, mino_env *env)
 {
     double dx, dy;
     (void)env;
@@ -58,13 +58,13 @@ static mino_val_t *host_move(mino_state_t *S, mino_val_t *args, mino_env_t *env)
     return host_pos(S, args, env);
 }
 
-static mino_val_t *host_hp(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_hp(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)args; (void)env;
     return mino_int(S, player.hp);
 }
 
-static mino_val_t *host_heal(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_heal(mino_state *S, mino_val *args, mino_env *env)
 {
     long long amount;
     (void)env;
@@ -75,7 +75,7 @@ static mino_val_t *host_heal(mino_state_t *S, mino_val_t *args, mino_env_t *env)
     return mino_int(S, player.hp);
 }
 
-static mino_val_t *host_damage(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_damage(mino_state *S, mino_val *args, mino_env *env)
 {
     long long amount;
     (void)env;
@@ -86,9 +86,9 @@ static mino_val_t *host_damage(mino_state_t *S, mino_val_t *args, mino_env_t *en
     return mino_int(S, player.hp);
 }
 
-static mino_val_t *host_status(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *host_status(mino_state *S, mino_val *args, mino_env *env)
 {
-    mino_val_t *keys[3], *vals[3];
+    mino_val *keys[3], *vals[3];
     (void)args; (void)env;
     keys[0] = mino_keyword(S, "pos");
     vals[0] = host_pos(S, args, env);
@@ -101,8 +101,8 @@ static mino_val_t *host_status(mino_state_t *S, mino_val_t *args, mino_env_t *en
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Install I/O so scripts can use println. */
     mino_install(S, env, MINO_CAP_IO);
@@ -141,7 +141,7 @@ int main(void)
         };
         size_t i;
         for (i = 0; i < sizeof(commands)/sizeof(commands[0]); i++) {
-            mino_val_t *result;
+            mino_val *result;
             printf("> %s\n", commands[i]);
             result = mino_eval_string(S, commands[i], env);
             if (result == NULL) {

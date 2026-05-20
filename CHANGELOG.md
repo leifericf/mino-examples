@@ -2,9 +2,8 @@
 
 ## Unreleased
 
-- Tracking mino v0.382.0 (embedder UX cycle, Phase 1 —
-  cascade-completion). Picks up the v0.150.0 and v0.151.0
-  embedding-API revamp — opaque `struct mino_val`, a single
+- Tracking mino v0.383.0 (embedder UX cycle, Phases 1–2).
+  Phase 1: opaque `struct mino_val`, a single
   `mino_install(S, env, caps)` bitmask entry replacing the 22
   per-capability installers, a full type-predicate grid, the
   `_ex` matrix with structured error access, collection builders
@@ -15,6 +14,13 @@
   `mino_eval_string` and `mino_read`, sorted-map / sorted-set
   iter, raw thrown payload through `out_ex`, `mino_to_int`
   bigint round-trip).
+  Phase 2: drops the `_t` suffix from every public typedef
+  (SQLite-style `typedef struct mino_X mino_X`), renames the
+  `mino_ref` function to `mino_ref_new` to clear the typedef
+  collision, and renames the `mino_gc_stats` struct to
+  `mino_gc_stats_out` to clear the function-name collision.
+  Every C/C++ example and cookbook chapter in this repo has been
+  ported to the new names; the JNI binding likewise.
 
 - JNI binding: `Java_MinoEmbed_envNew` was still calling the
   removed-in-v0.151 `mino_new(state)` symbol. Replaced with

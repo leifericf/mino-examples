@@ -20,8 +20,8 @@
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Each agent pool needs its own worker thread (the embedder
      * thread does not count). For both POOLED and SOLO concurrently,
@@ -32,11 +32,11 @@ int main(void)
     mino_install(S, env, MINO_CAP_AGENT);
 
     /* (fn [v] (inc v)) - increment the agent's value. */
-    mino_val_t *inc_fn = mino_eval_string(S, "(fn [v] (inc v))", env);
+    mino_val *inc_fn = mino_eval_string(S, "(fn [v] (inc v))", env);
 
     /* Construct an agent holding 0. The owning state is recorded so
      * cross-state misuse throws MST007 at the C boundary. */
-    mino_val_t *counter = mino_agent(S, mino_int(S, 0));
+    mino_val *counter = mino_agent(S, mino_int(S, 0));
 
     /* Fire two sends onto POOLED, one send-off onto SOLO. mino_send
      * and mino_send_off return the agent immediately; the action
@@ -48,7 +48,7 @@ int main(void)
     /* Block until the run-queues drain. The NULL-terminated array
      * lets one await wait on multiple agents at once. */
     {
-        mino_val_t *agents[2];
+        mino_val *agents[2];
         agents[0] = counter;
         agents[1] = NULL;
         mino_await(S, agents);
@@ -61,7 +61,7 @@ int main(void)
      * before the deadline, 0 on timeout. The trivial path returns 1
      * immediately when nothing is queued. */
     {
-        mino_val_t *agents[2];
+        mino_val *agents[2];
         agents[0] = counter;
         agents[1] = NULL;
         printf("await_for with empty queue: %d (expect 1)\n",
@@ -72,11 +72,11 @@ int main(void)
      * then queue a (dec) action. The validator throws and the agent
      * latches the error. */
     {
-        mino_val_t *guarded = mino_eval_string(S,
+        mino_val *guarded = mino_eval_string(S,
             "(agent 0 :validator (fn [v] (>= v 0)))", env);
-        mino_val_t *dec_fn  = mino_eval_string(S, "(fn [v] (dec v))", env);
-        mino_val_t *err;
-        mino_val_t *agents[2];
+        mino_val *dec_fn  = mino_eval_string(S, "(fn [v] (dec v))", env);
+        mino_val *err;
+        mino_val *agents[2];
         agents[0] = guarded;
         agents[1] = NULL;
 

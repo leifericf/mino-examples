@@ -29,33 +29,33 @@ struct BuildEnv {
     int         version_minor;
 };
 
-static mino_val_t *env_new(mino_state_t *S, mino_val_t *,
-                           mino_val_t *, void *)
+static mino_val *env_new(mino_state *S, mino_val *,
+                           mino_val *, void *)
 {
     auto *env = new BuildEnv{"linux", "release", 2, 7};
     return mino_handle_ex(S, env, "BuildEnv",
         [](void *p, const char *) { delete static_cast<BuildEnv *>(p); });
 }
 
-static mino_val_t *env_platform(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *, void *)
+static mino_val *env_platform(mino_state *S, mino_val *target,
+                                mino_val *, void *)
 {
     auto *env = static_cast<BuildEnv *>(mino_handle_ptr(target));
     return mino_keyword(S, env->platform);
 }
 
-static mino_val_t *env_mode(mino_state_t *S, mino_val_t *target,
-                            mino_val_t *, void *)
+static mino_val *env_mode(mino_state *S, mino_val *target,
+                            mino_val *, void *)
 {
     auto *env = static_cast<BuildEnv *>(mino_handle_ptr(target));
     return mino_keyword(S, env->mode);
 }
 
-static mino_val_t *env_version(mino_state_t *S, mino_val_t *target,
-                               mino_val_t *, void *)
+static mino_val *env_version(mino_state *S, mino_val *target,
+                               mino_val *, void *)
 {
     auto *env = static_cast<BuildEnv *>(mino_handle_ptr(target));
-    mino_val_t *items[2];
+    mino_val *items[2];
     items[0] = mino_int(S, env->version_major);
     items[1] = mino_int(S, env->version_minor);
     return mino_vector(S, items, 2);
@@ -92,8 +92,8 @@ static const char *script =
 int main()
 {
     /* Create a sandboxed runtime: core bindings only, no I/O. */
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new(S);
     mino_install(S, env, MINO_CAP_DEFAULT);
 
     /* Register the BuildEnv type. */
@@ -104,7 +104,7 @@ int main()
     mino_host_register_getter(S, "BuildEnv", "version", env_version, nullptr);
 
     /* Evaluate the config script. */
-    mino_val_t *cfg = mino_eval_string(S, script, env);
+    mino_val *cfg = mino_eval_string(S, script, env);
 
     if (cfg) {
         printf("config: ");
@@ -112,7 +112,7 @@ int main()
 
         /* Extract a single value for the C++ side. */
         mino_env_set(S, env, "__cfg", cfg);
-        mino_val_t *dir = mino_eval_string(S, "(get __cfg :output-dir)", env);
+        mino_val *dir = mino_eval_string(S, "(get __cfg :output-dir)", env);
         if (dir) {
             const char *s;
             size_t n;

@@ -29,14 +29,14 @@ struct Accumulator {
     double total = 0.0;
 };
 
-static mino_val_t *acc_new(mino_state_t *S, mino_val_t *,
-                           mino_val_t *, void *) {
+static mino_val *acc_new(mino_state *S, mino_val *,
+                           mino_val *, void *) {
     return mino_handle_ex(S, new Accumulator, "Accumulator",
         [](void *p, const char *) { delete static_cast<Accumulator *>(p); });
 }
 
-static mino_val_t *acc_add(mino_state_t *S, mino_val_t *target,
-                           mino_val_t *args, void *) {
+static mino_val *acc_add(mino_state *S, mino_val *target,
+                           mino_val *args, void *) {
     auto *a = static_cast<Accumulator *>(mino_handle_ptr(target));
     double v;
     mino_to_float(mino_car(args), &v);
@@ -45,21 +45,21 @@ static mino_val_t *acc_add(mino_state_t *S, mino_val_t *target,
     return target;
 }
 
-static mino_val_t *acc_total(mino_state_t *S, mino_val_t *target,
-                             mino_val_t *, void *) {
+static mino_val *acc_total(mino_state *S, mino_val *target,
+                             mino_val *, void *) {
     return mino_float(S,
         static_cast<Accumulator *>(mino_handle_ptr(target))->total);
 }
 
-static mino_val_t *acc_count(mino_state_t *S, mino_val_t *target,
-                             mino_val_t *, void *) {
+static mino_val *acc_count(mino_state *S, mino_val *target,
+                             mino_val *, void *) {
     return mino_int(S, static_cast<long long>(
         static_cast<Accumulator *>(mino_handle_ptr(target))->values.size()));
 }
 
 int main() {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     // Register the Accumulator type with mino.
     mino_host_enable(S);
@@ -69,7 +69,7 @@ int main() {
     mino_host_register_getter(S, "Accumulator", "count", acc_count, nullptr);
 
     // mino code uses dot-syntax and tail-call recursion.
-    mino_val_t *result = mino_eval_string(S,
+    mino_val *result = mino_eval_string(S,
         "(defn add-all [acc items]       \n"
         "  (if (empty? items)            \n"
         "    acc                         \n"

@@ -31,9 +31,9 @@ struct Applicant {
     int         years_employed;
 };
 
-static mino_val_t *make_applicant(mino_state_t *S, const Applicant &a)
+static mino_val *make_applicant(mino_state *S, const Applicant &a)
 {
-    mino_val_t *ks[6], *vs[6];
+    mino_val *ks[6], *vs[6];
     ks[0] = mino_keyword(S, "name");           vs[0] = mino_string(S, a.name);
     ks[1] = mino_keyword(S, "age");            vs[1] = mino_int(S, a.age);
     ks[2] = mino_keyword(S, "credit-score");   vs[2] = mino_int(S, a.credit_score);
@@ -86,8 +86,8 @@ static const char *script =
 
 int main()
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
 
     /* Build applicant data from the C++ side. */
     std::vector<Applicant> data = {
@@ -100,11 +100,11 @@ int main()
 
     /* Convert to a mino vector. Each record is rooted via mino_ref
      * so earlier records survive GC while later ones are allocated. */
-    std::vector<mino_ref_t *> refs;
+    std::vector<mino_ref *> refs;
     for (auto &a : data)
-        refs.push_back(mino_ref(S, make_applicant(S, a)));
+        refs.push_back(mino_ref_new(S, make_applicant(S, a)));
 
-    std::vector<mino_val_t *> records;
+    std::vector<mino_val *> records;
     for (auto *r : refs)
         records.push_back(mino_deref(r));
     mino_env_set(S, env, "applicants",
@@ -113,7 +113,7 @@ int main()
         mino_unref(S, r);
 
     /* Evaluate the rules script. */
-    mino_val_t *result = mino_eval_string(S, script, env);
+    mino_val *result = mino_eval_string(S, script, env);
 
     if (result) {
         printf("decisions: ");

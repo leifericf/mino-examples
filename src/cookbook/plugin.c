@@ -34,11 +34,11 @@ static const char *math_plugin =
     "                (reduce + 0 (list a2 b2)))))\n";
 
 /* Call a named function in env with a single argument. */
-static mino_val_t *call1(mino_state_t *S, mino_env_t *env, const char *name,
-                         mino_val_t *arg)
+static mino_val *call1(mino_state *S, mino_env *env, const char *name,
+                         mino_val *arg)
 {
-    mino_val_t *fn   = mino_env_get(env, name);
-    mino_val_t *args = mino_cons(S, arg, mino_nil(S));
+    mino_val *fn   = mino_env_get(env, name);
+    mino_val *args = mino_cons(S, arg, mino_nil(S));
     if (fn == NULL) {
         fprintf(stderr, "plugin: function '%s' not found\n", name);
         return NULL;
@@ -46,11 +46,11 @@ static mino_val_t *call1(mino_state_t *S, mino_env_t *env, const char *name,
     return mino_call(S, fn, args, env);
 }
 
-static mino_val_t *call2(mino_state_t *S, mino_env_t *env, const char *name,
-                         mino_val_t *a, mino_val_t *b)
+static mino_val *call2(mino_state *S, mino_env *env, const char *name,
+                         mino_val *a, mino_val *b)
 {
-    mino_val_t *fn   = mino_env_get(env, name);
-    mino_val_t *args = mino_cons(S, a, mino_cons(S, b, mino_nil(S)));
+    mino_val *fn   = mino_env_get(env, name);
+    mino_val *args = mino_cons(S, a, mino_cons(S, b, mino_nil(S)));
     if (fn == NULL) {
         fprintf(stderr, "plugin: function '%s' not found\n", name);
         return NULL;
@@ -60,9 +60,9 @@ static mino_val_t *call2(mino_state_t *S, mino_env_t *env, const char *name,
 
 int main(void)
 {
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_val_t *result;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_val *result;
 
     /* Load the greeter plugin. */
     if (mino_eval_string(S, greeter_plugin, env) == NULL) {
@@ -113,9 +113,9 @@ int main(void)
 
     /* Demonstrate protected call - catches errors gracefully. */
     {
-        mino_val_t *fn  = mino_env_get(env, "square");
-        mino_val_t *bad = mino_cons(S, mino_string(S, "oops"), mino_nil(S));
-        mino_val_t *out = NULL;
+        mino_val *fn  = mino_env_get(env, "square");
+        mino_val *bad = mino_cons(S, mino_string(S, "oops"), mino_nil(S));
+        mino_val *out = NULL;
         int rc = mino_pcall(S, fn, bad, env, &out, NULL);
         if (rc != 0) {
             printf("pcall caught: %s\n", mino_last_error(S));

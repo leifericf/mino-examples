@@ -14,11 +14,11 @@
 #  include <alloca.h>
 #endif
 
-static size_t count_collection(mino_state_t *S, const mino_val_t *v)
+static size_t count_collection(mino_state *S, const mino_val *v)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     size_t n = 0;
-    mino_iter_init(S, it, (mino_val_t *)v);
+    mino_iter_init(S, it, (mino_val *)v);
     while (mino_iter_next(it, NULL, NULL)) n++;
     mino_iter_done(it);
     return n;
@@ -41,17 +41,17 @@ static int tests_passed = 0;
 static void test_states_are_isolated(void)
 {
     TEST("states are isolated: defs don't leak");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_env_new_default(s1);
-    mino_env_t *e2 = mino_env_new_default(s2);
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
+    mino_env *e1 = mino_env_new_default(s1);
+    mino_env *e2 = mino_env_new_default(s2);
 
     /* Define something in s1. */
-    mino_val_t *r1 = mino_eval_string(s1, "(def foo 42)", e1);
+    mino_val *r1 = mino_eval_string(s1, "(def foo 42)", e1);
     ASSERT(r1 != NULL, "def in s1 failed");
 
     /* s2 should not see it. */
-    mino_val_t *r2 = mino_eval_string(s2, "foo", e2);
+    mino_val *r2 = mino_eval_string(s2, "foo", e2);
     ASSERT(r2 == NULL, "s2 should not see s1's def");
 
     mino_env_free(s1, e1);
@@ -64,11 +64,11 @@ static void test_states_are_isolated(void)
 static void test_state_symbol_interning(void)
 {
     TEST("each state has independent symbol interning");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
 
-    mino_val_t *sym1 = mino_symbol(s1, "test-sym");
-    mino_val_t *sym2 = mino_symbol(s2, "test-sym");
+    mino_val *sym1 = mino_symbol(s1, "test-sym");
+    mino_val *sym2 = mino_symbol(s2, "test-sym");
 
     /* Different states, different pointers. */
     ASSERT(sym1 != sym2, "symbols from different states should be different pointers");
@@ -86,8 +86,8 @@ static void test_state_create_free_cycle(void)
     TEST("create and free 100 states without leaking");
     int i;
     for (i = 0; i < 100; i++) {
-        mino_state_t *s = mino_state_new();
-        mino_env_t *e = mino_env_new_default(s);
+        mino_state *s = mino_state_new();
+        mino_env *e = mino_env_new_default(s);
         mino_eval_string(s, "(def x (into [] (range 50)))", e);
         mino_env_free(s, e);
         mino_state_free(s);
@@ -100,12 +100,12 @@ static void test_state_create_free_cycle(void)
 static void test_gc_pin_eval_string_heavy(void)
 {
     TEST("GC pins survive heavy eval_string allocation");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     mino_install(S, env, MINO_CAP_IO);
 
     /* Build a large map, then look up values. */
-    mino_val_t *r = mino_eval_string(S,
+    mino_val *r = mino_eval_string(S,
         "(def m (reduce (fn (acc i) (assoc acc (keyword (str \"k\" i)) i))"
         "  {} (range 100)))"
         "(get m :k50)", env);
@@ -122,13 +122,13 @@ static void test_gc_pin_eval_string_heavy(void)
 static void test_ref_survives_gc(void)
 {
     TEST("ref'd value survives multiple GC cycles");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Create a value and ref it. */
-    mino_val_t *v = mino_eval_string(S, "[1 2 3 4 5]", env);
+    mino_val *v = mino_eval_string(S, "[1 2 3 4 5]", env);
     ASSERT(v != NULL, "eval failed");
-    mino_ref_t *ref = mino_ref(S, v);
+    mino_ref *ref = mino_ref_new(S, v);
 
     /* Force many allocations to trigger GC. */
     int i;
@@ -137,7 +137,7 @@ static void test_ref_survives_gc(void)
     }
 
     /* The ref should still be valid. */
-    mino_val_t *derefed = mino_deref(ref);
+    mino_val *derefed = mino_deref(ref);
     ASSERT(derefed != NULL, "deref returned NULL");
     ASSERT(mino_is_vector(derefed), "not a vector");
     ASSERT(count_collection(S, derefed) == 5, "wrong length");
@@ -153,10 +153,10 @@ static void test_ref_survives_gc(void)
 static void test_repl_basic(void)
 {
     TEST("REPL handle: single-line eval");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_repl_t *repl = mino_repl_new(S, env);
-    mino_val_t *out = NULL;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_repl *repl = mino_repl_new(S, env);
+    mino_val *out = NULL;
 
     int rc = mino_repl_feed(repl, "(+ 1 2)", &out);
     ASSERT(rc == MINO_REPL_OK, "expected OK");
@@ -174,10 +174,10 @@ static void test_repl_basic(void)
 static void test_repl_multiline(void)
 {
     TEST("REPL handle: multi-line form");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_repl_t *repl = mino_repl_new(S, env);
-    mino_val_t *out = NULL;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_repl *repl = mino_repl_new(S, env);
+    mino_val *out = NULL;
 
     int rc = mino_repl_feed(repl, "(+", &out);
     ASSERT(rc == MINO_REPL_MORE, "expected MORE");
@@ -197,10 +197,10 @@ static void test_repl_multiline(void)
 static void test_repl_error_recovery(void)
 {
     TEST("REPL handle: error recovery");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_repl_t *repl = mino_repl_new(S, env);
-    mino_val_t *out = NULL;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_repl *repl = mino_repl_new(S, env);
+    mino_val *out = NULL;
 
     /* Force an error. */
     int rc = mino_repl_feed(repl, "(/ 1 0)", &out);
@@ -222,10 +222,10 @@ static void test_repl_error_recovery(void)
 static void test_repl_def_persists(void)
 {
     TEST("REPL handle: def persists across feeds");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
-    mino_repl_t *repl = mino_repl_new(S, env);
-    mino_val_t *out = NULL;
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
+    mino_repl *repl = mino_repl_new(S, env);
+    mino_val *out = NULL;
 
     mino_repl_feed(repl, "(def x 42)", &out);
     int rc = mino_repl_feed(repl, "x", &out);
@@ -245,11 +245,11 @@ static void test_repl_def_persists(void)
 static void test_step_limit(void)
 {
     TEST("step limit stops infinite loop");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
-    mino_val_t *r = mino_eval_string(S,
+    mino_val *r = mino_eval_string(S,
         "(loop (i 0) (recur (+ i 1)))", env);
     ASSERT(r == NULL, "expected NULL from step limit");
     const char *err = mino_last_error(S);
@@ -269,11 +269,11 @@ static void test_step_limit(void)
 static void test_heap_limit(void)
 {
     TEST("heap limit stops allocation-heavy code");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     mino_set_limit(S, MINO_LIMIT_HEAP, 1024 * 64); /* 64KB */
-    mino_val_t *r = mino_eval_string(S,
+    mino_val *r = mino_eval_string(S,
         "(into [] (range 100000))", env);
     ASSERT(r == NULL, "expected NULL from heap limit");
     const char *err = mino_last_error(S);
@@ -288,8 +288,8 @@ static void test_heap_limit(void)
 static void test_interrupt(void)
 {
     TEST("mino_interrupt stops eval (via step limit trick)");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* The interrupt flag is cleared at the start of each eval call (documented
      * behavior: "The flag is cleared at the start of the next eval call").
@@ -298,7 +298,7 @@ static void test_interrupt(void)
      * flag gets cleared by eval_string before it processes forms). */
     mino_interrupt(S);
     /* This will succeed because eval_string clears the flag at entry. */
-    mino_val_t *r = mino_eval_string(S, "(+ 1 1)", env);
+    mino_val *r = mino_eval_string(S, "(+ 1 1)", env);
     ASSERT(r != NULL, "eval should succeed (interrupt cleared at entry)");
 
     mino_env_free(S, env);
@@ -311,15 +311,15 @@ static void test_interrupt(void)
 static void test_clone_deeply_nested(void)
 {
     TEST("clone deeply nested structure");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
+    mino_env *e1 = mino_env_new_default(s1);
 
-    mino_val_t *v = mino_eval_string(s1,
+    mino_val *v = mino_eval_string(s1,
         "{:a [1 2 {:b #{3 4 5}}] :c (list 6 7 8)}", e1);
     ASSERT(v != NULL, "eval failed");
 
-    mino_val_t *cloned = mino_clone(s2, s1, v);
+    mino_val *cloned = mino_clone(s2, s1, v);
     ASSERT(cloned != NULL, "clone failed");
     ASSERT(mino_is_map(cloned), "not a map");
 
@@ -332,15 +332,15 @@ static void test_clone_deeply_nested(void)
 static void test_clone_rejects_fn(void)
 {
     TEST("clone rejects values containing functions");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
+    mino_env *e1 = mino_env_new_default(s1);
 
-    mino_val_t *v = mino_eval_string(s1,
+    mino_val *v = mino_eval_string(s1,
         "{:f (fn (x) x)}", e1);
     ASSERT(v != NULL, "eval failed");
 
-    mino_val_t *cloned = mino_clone(s2, s1, v);
+    mino_val *cloned = mino_clone(s2, s1, v);
     ASSERT(cloned == NULL, "clone should have failed");
     const char *err = mino_last_error(s2);
     ASSERT(err != NULL, "expected error");
@@ -355,14 +355,14 @@ static void test_clone_rejects_fn(void)
 static void test_clone_empty_collections(void)
 {
     TEST("clone empty collections");
-    mino_state_t *s1 = mino_state_new();
-    mino_state_t *s2 = mino_state_new();
-    mino_env_t *e1 = mino_env_new_default(s1);
+    mino_state *s1 = mino_state_new();
+    mino_state *s2 = mino_state_new();
+    mino_env *e1 = mino_env_new_default(s1);
 
-    mino_val_t *v = mino_eval_string(s1, "[[] {} #{} nil]", e1);
+    mino_val *v = mino_eval_string(s1, "[[] {} #{} nil]", e1);
     ASSERT(v != NULL, "eval failed");
 
-    mino_val_t *cloned = mino_clone(s2, s1, v);
+    mino_val *cloned = mino_clone(s2, s1, v);
     ASSERT(cloned != NULL, "clone failed");
     ASSERT(mino_is_vector(cloned), "not a vector");
     ASSERT(count_collection(s2, cloned) == 4, "wrong length");
@@ -378,27 +378,27 @@ static void test_clone_empty_collections(void)
 static void test_env_clone_diverge(void)
 {
     TEST("env clone diverges from original");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Use env-scoped bindings (mino_env_set), not namespace-scoped
      * (def): cloning the env produces an independent lexical scope,
      * but namespace vars are shared across the state. */
     mino_env_set(S, env, "x", mino_int(S, 1));
-    mino_env_t *clone = mino_env_clone(S, env);
+    mino_env *clone = mino_env_clone(S, env);
 
     /* Modify clone's binding. */
     mino_env_set(S, clone, "x", mino_int(S, 99));
 
     /* Original should still have x = 1. */
-    mino_val_t *orig_x = mino_eval_string(S, "x", env);
+    mino_val *orig_x = mino_eval_string(S, "x", env);
     ASSERT(orig_x != NULL, "eval in original failed");
     long long val;
     ASSERT(mino_to_int(orig_x, &val), "not an int");
     ASSERT(val == 1, "original should still be 1");
 
     /* Clone should have x = 99. */
-    mino_val_t *clone_x = mino_eval_string(S, "x", clone);
+    mino_val *clone_x = mino_eval_string(S, "x", clone);
     ASSERT(clone_x != NULL, "eval in clone failed");
     ASSERT(mino_to_int(clone_x, &val), "not an int");
     ASSERT(val == 99, "clone should be 99");
@@ -423,8 +423,8 @@ static void test_handle_finalizer_on_gc(void)
 {
     TEST("handle finalizer called on GC");
     finalizer_called = 0;
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Create a handle, don't ref it, let it be collected. */
     int dummy = 42;
@@ -449,13 +449,13 @@ static void test_handle_finalizer_on_gc(void)
 static void test_atom_api(void)
 {
     TEST("atom create, deref, reset from C API");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
-    mino_val_t *a = mino_atom(S, mino_int(S, 10));
+    mino_val *a = mino_atom(S, mino_int(S, 10));
     ASSERT(mino_is_atom(a), "should be atom");
 
-    mino_val_t *v = mino_atom_deref(a);
+    mino_val *v = mino_atom_deref(a);
     long long val;
     ASSERT(mino_to_int(v, &val), "not an int");
     ASSERT(val == 10, "expected 10");
@@ -475,18 +475,18 @@ static void test_atom_api(void)
 static void test_pcall_success(void)
 {
     TEST("pcall returns 0 on success");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Core arithmetic prims live in the clojure.core namespace, not
      * the user env. Resolve through eval so the namespace machinery
      * looks them up. */
-    mino_val_t *fn = mino_eval_string(S, "+", env);
+    mino_val *fn = mino_eval_string(S, "+", env);
     ASSERT(fn != NULL, "+ not found");
 
-    mino_val_t *args = mino_cons(S, mino_int(S, 1),
+    mino_val *args = mino_cons(S, mino_int(S, 1),
                        mino_cons(S, mino_int(S, 2), mino_nil(S)));
-    mino_val_t *out = NULL;
+    mino_val *out = NULL;
     int rc = mino_pcall(S, fn, args, env, &out, NULL);
     ASSERT(rc == 0, "pcall should return 0");
     ASSERT(out != NULL, "no result");
@@ -502,16 +502,16 @@ static void test_pcall_success(void)
 static void test_pcall_error(void)
 {
     TEST("pcall returns -1 on error");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* / lives in clojure.core; resolve via eval, not env lookup. */
-    mino_val_t *fn = mino_eval_string(S, "/", env);
+    mino_val *fn = mino_eval_string(S, "/", env);
     ASSERT(fn != NULL, "/ not found");
 
-    mino_val_t *args = mino_cons(S, mino_int(S, 1),
+    mino_val *args = mino_cons(S, mino_int(S, 1),
                        mino_cons(S, mino_int(S, 0), mino_nil(S)));
-    mino_val_t *out = NULL;
+    mino_val *out = NULL;
     int rc = mino_pcall(S, fn, args, env, &out, NULL);
     ASSERT(rc == -1, "pcall should return -1");
     ASSERT(out == NULL, "out should be NULL");
@@ -523,11 +523,11 @@ static void test_pcall_error(void)
 
 /* --- Custom primitive --- */
 
-static mino_val_t *prim_double(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *prim_double(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)env;
     if (!mino_is_cons(args)) return mino_nil(S);
-    mino_val_t *v = mino_car(args);
+    mino_val *v = mino_car(args);
     long long n;
     if (!mino_to_int(v, &n)) return mino_nil(S);
     return mino_int(S, n * 2);
@@ -536,12 +536,12 @@ static mino_val_t *prim_double(mino_state_t *S, mino_val_t *args, mino_env_t *en
 static void test_custom_primitive(void)
 {
     TEST("register and call custom primitive");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     mino_register_fn(S, env, "double", prim_double);
 
-    mino_val_t *r = mino_eval_string(S, "(double 21)", env);
+    mino_val *r = mino_eval_string(S, "(double 21)", env);
     ASSERT(r != NULL, "eval failed");
     long long val;
     ASSERT(mino_to_int(r, &val), "not an int");
@@ -557,11 +557,11 @@ static void test_custom_primitive(void)
 static void test_reader_edge_cases(void)
 {
     TEST("reader handles edge cases");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* Empty string. */
-    mino_val_t *r = mino_eval_string(S, "", env);
+    mino_val *r = mino_eval_string(S, "", env);
     ASSERT(r != NULL, "empty string should return nil");
     ASSERT(mino_is_nil(r), "empty string should be nil");
 
@@ -585,11 +585,11 @@ static void test_reader_edge_cases(void)
 static void test_predicate_matrix(void)
 {
     TEST("type predicates on all value types");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* nil */
-    mino_val_t *v = mino_nil(S);
+    mino_val *v = mino_nil(S);
     ASSERT(mino_is_nil(v), "nil is nil");
     ASSERT(!mino_is_truthy(v), "nil is falsey");
 
@@ -621,30 +621,30 @@ static void test_predicate_matrix(void)
 static void test_equality_edge_cases(void)
 {
     TEST("equality across types and nesting");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
 
     /* nil == nil */
     ASSERT(mino_eq(mino_nil(S), mino_nil(S)), "nil == nil");
 
     /* int != float (different types) */
-    mino_val_t *i = mino_int(S, 42);
-    mino_val_t *f = mino_float(S, 42.0);
+    mino_val *i = mino_int(S, 42);
+    mino_val *f = mino_float(S, 42.0);
     /* This tests whether your equality considers numeric coercion. */
     /* Not asserting either way; just exercising it. */
     (void)mino_eq(i, f);
 
     /* Vector equality */
-    mino_val_t *v1 = mino_eval_string(S, "[1 2 3]", env);
-    mino_val_t *v2 = mino_eval_string(S, "[1 2 3]", env);
+    mino_val *v1 = mino_eval_string(S, "[1 2 3]", env);
+    mino_val *v2 = mino_eval_string(S, "[1 2 3]", env);
     ASSERT(mino_eq(v1, v2), "equal vectors");
 
-    mino_val_t *v3 = mino_eval_string(S, "[1 2 4]", env);
+    mino_val *v3 = mino_eval_string(S, "[1 2 4]", env);
     ASSERT(!mino_eq(v1, v3), "unequal vectors");
 
     /* Map equality */
-    mino_val_t *m1 = mino_eval_string(S, "{:a 1 :b 2}", env);
-    mino_val_t *m2 = mino_eval_string(S, "{:b 2 :a 1}", env);
+    mino_val *m1 = mino_eval_string(S, "{:a 1 :b 2}", env);
+    mino_val *m2 = mino_eval_string(S, "{:b 2 :a 1}", env);
     ASSERT(mino_eq(m1, m2), "equal maps regardless of insertion order");
 
     mino_env_free(S, env);
@@ -666,8 +666,8 @@ static const char *test_resolver(const char *name, void *ctx)
 static void test_module_resolver(void)
 {
     TEST("custom module resolver");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new_default(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new_default(S);
     mino_install(S, env, MINO_CAP_IO);
 
     /* Write a temp module file. */
@@ -677,7 +677,7 @@ static void test_module_resolver(void)
 
     mino_set_resolver(S, test_resolver, NULL);
 
-    mino_val_t *r = mino_eval_string(S,
+    mino_val *r = mino_eval_string(S,
         "(require \"test-mod\") mod-value", env);
     ASSERT(r != NULL, "require failed");
     long long val;
@@ -694,8 +694,8 @@ static void test_module_resolver(void)
 static void test_sandbox_no_io(void)
 {
     TEST("sandbox: default env has no filesystem reads");
-    mino_state_t *S = mino_state_new();
-    mino_env_t *env = mino_env_new(S);
+    mino_state *S = mino_state_new();
+    mino_env *env = mino_env_new(S);
     mino_install(S, env, MINO_CAP_DEFAULT);
 
     /* `slurp` lives in MINO_CAP_IO, which the sandbox preset omits;
@@ -703,7 +703,7 @@ static void test_sandbox_no_io(void)
      * runtime rejects with a capability-disabled message rather than an
      * unbound-symbol message: the prim stub stays installed but throws
      * when the cap is off. */
-    mino_val_t *r = mino_eval_string(S, "(slurp \"/etc/hostname\")", env);
+    mino_val *r = mino_eval_string(S, "(slurp \"/etc/hostname\")", env);
     ASSERT(r == NULL, "slurp should fail in sandbox");
     const char *err = mino_last_error(S);
     ASSERT(err != NULL, "expected error");

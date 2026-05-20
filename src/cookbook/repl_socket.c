@@ -39,8 +39,8 @@ int main(void)
 {
     int         srv, cli;
     struct sockaddr_in addr;
-    mino_env_t *env;
-    mino_repl_t *repl;
+    mino_env *env;
+    mino_repl *repl;
     char         buf[BUFSZ];
 
     /* Set up the listening socket. */
@@ -66,7 +66,7 @@ int main(void)
     printf("client connected\n");
 
     /* Create the mino runtime with full capabilities. */
-    mino_state_t *S = mino_state_new();
+    mino_state *S = mino_state_new();
     env = mino_env_new_default(S);
     mino_install(S, env, MINO_CAP_IO);
     repl = mino_repl_new(S, env);
@@ -85,7 +85,7 @@ int main(void)
             char *line = buf;
             char *nl;
             while ((nl = strchr(line, '\n')) != NULL) {
-                mino_val_t *out = NULL;
+                mino_val *out = NULL;
                 int         rc;
                 *nl = '\0';
                 rc = mino_repl_feed(repl, line, &out);

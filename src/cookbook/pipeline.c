@@ -15,9 +15,9 @@
 
 int main(void)
 {
-    mino_state_t *S   = mino_state_new();
-    mino_env_t   *env = mino_env_new_default(S);
-    mino_val_t *result;
+    mino_state *S   = mino_state_new();
+    mino_env   *env = mino_env_new_default(S);
+    mino_val *result;
 
     /* Build a vector of employee records from C data. */
     {
@@ -26,10 +26,10 @@ int main(void)
         static const int salaries[] = { 75000, 92000, 68000, 110000 };
         size_t i;
         size_t n = sizeof(names) / sizeof(names[0]);
-        mino_val_t **records = (mino_val_t **)malloc(n * sizeof(*records));
+        mino_val **records = (mino_val **)malloc(n * sizeof(*records));
 
         for (i = 0; i < n; i++) {
-            mino_val_t *keys[3], *vals[3];
+            mino_val *keys[3], *vals[3];
             keys[0] = mino_keyword(S, "name");
             vals[0] = mino_string(S, names[i]);
             keys[1] = mino_keyword(S, "age");
@@ -75,7 +75,7 @@ int main(void)
         env);
     if (result != NULL) {
         /* Walk the result list and print each line. */
-        mino_val_t *p = result;
+        mino_val *p = result;
         while (mino_is_cons(p)) {
             const char *s;
             size_t      len;

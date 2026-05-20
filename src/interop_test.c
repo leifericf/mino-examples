@@ -27,8 +27,8 @@ typedef struct {
     long long val;
 } counter_t;
 
-static mino_val_t *counter_new(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *args, void *ctx)
+static mino_val *counter_new(mino_state *S, mino_val *target,
+                                mino_val *args, void *ctx)
 {
     counter_t *c;
     (void)target; (void)args; (void)ctx;
@@ -38,8 +38,8 @@ static mino_val_t *counter_new(mino_state_t *S, mino_val_t *target,
     return mino_handle_ex(S, c, "Counter", free_finalizer);
 }
 
-static mino_val_t *counter_inc(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *args, void *ctx)
+static mino_val *counter_inc(mino_state *S, mino_val *target,
+                                mino_val *args, void *ctx)
 {
     counter_t *c;
     (void)S; (void)args; (void)ctx;
@@ -48,8 +48,8 @@ static mino_val_t *counter_inc(mino_state_t *S, mino_val_t *target,
     return target;
 }
 
-static mino_val_t *counter_get(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *args, void *ctx)
+static mino_val *counter_get(mino_state *S, mino_val *target,
+                                mino_val *args, void *ctx)
 {
     counter_t *c;
     (void)args; (void)ctx;
@@ -57,8 +57,8 @@ static mino_val_t *counter_get(mino_state_t *S, mino_val_t *target,
     return mino_int(S, c->val);
 }
 
-static mino_val_t *counter_add(mino_state_t *S, mino_val_t *target,
-                                mino_val_t *args, void *ctx)
+static mino_val *counter_add(mino_state *S, mino_val *target,
+                                mino_val *args, void *ctx)
 {
     counter_t *c;
     long long n;
@@ -70,8 +70,8 @@ static mino_val_t *counter_add(mino_state_t *S, mino_val_t *target,
     return target;
 }
 
-static mino_val_t *counter_value_getter(mino_state_t *S, mino_val_t *target,
-                                         mino_val_t *args, void *ctx)
+static mino_val *counter_value_getter(mino_state *S, mino_val *target,
+                                         mino_val *args, void *ctx)
 {
     counter_t *c;
     (void)args; (void)ctx;
@@ -81,8 +81,8 @@ static mino_val_t *counter_value_getter(mino_state_t *S, mino_val_t *target,
 
 /* --- Mock Math statics --- */
 
-static mino_val_t *math_add(mino_state_t *S, mino_val_t *target,
-                             mino_val_t *args, void *ctx)
+static mino_val *math_add(mino_state *S, mino_val *target,
+                             mino_val *args, void *ctx)
 {
     long long a, b;
     (void)target; (void)ctx;
@@ -94,8 +94,8 @@ static mino_val_t *math_add(mino_state_t *S, mino_val_t *target,
     return mino_int(S, a + b);
 }
 
-static mino_val_t *math_pi(mino_state_t *S, mino_val_t *target,
-                            mino_val_t *args, void *ctx)
+static mino_val *math_pi(mino_state *S, mino_val *target,
+                            mino_val *args, void *ctx)
 {
     (void)target; (void)args; (void)ctx;
     return mino_float(S, 3.14159265358979323846);
@@ -156,9 +156,9 @@ static const char *interop_test_src =
 
 int main(int argc, char **argv)
 {
-    mino_state_t *S;
-    mino_env_t   *env;
-    mino_val_t   *result;
+    mino_state *S;
+    mino_env   *env;
+    mino_val   *result;
     long long     failed = 0;
 
     (void)argc;

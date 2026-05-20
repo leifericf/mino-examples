@@ -20,11 +20,11 @@ extern "C" {
 #  include <alloca.h>
 #endif
 
-static size_t count_collection(mino_state_t *S, const mino_val_t *v)
+static size_t count_collection(mino_state *S, const mino_val *v)
 {
-    mino_iter_t *it = (mino_iter_t *)alloca(mino_iter_sizeof());
+    mino_iter *it = (mino_iter *)alloca(mino_iter_sizeof());
     size_t n = 0;
-    mino_iter_init(S, it, (mino_val_t *)v);
+    mino_iter_init(S, it, (mino_val *)v);
     while (mino_iter_next(it, NULL, NULL)) n++;
     mino_iter_done(it);
     return n;
@@ -45,30 +45,30 @@ static int tests_passed = 0;
 /* --- RAII wrappers --- */
 
 struct MiState {
-    mino_state_t *s;
+    mino_state *s;
     MiState() : s(mino_state_new()) {}
     ~MiState() { mino_state_free(s); }
     MiState(const MiState&) = delete;
     MiState& operator=(const MiState&) = delete;
-    operator mino_state_t*() { return s; }
+    operator mino_state*() { return s; }
 };
 
 struct MiEnv {
-    mino_state_t *s;
-    mino_env_t   *e;
-    MiEnv(mino_state_t *st) : s(st), e(mino_env_new_default(st)) {}
+    mino_state *s;
+    mino_env   *e;
+    MiEnv(mino_state *st) : s(st), e(mino_env_new_default(st)) {}
     ~MiEnv() { mino_env_free(s, e); }
     MiEnv(const MiEnv&) = delete;
-    operator mino_env_t*() { return e; }
+    operator mino_env*() { return e; }
 };
 
 struct MiRef {
-    mino_state_t *s;
-    mino_ref_t   *r;
-    MiRef(mino_state_t *st, mino_val_t *v) : s(st), r(mino_ref(st, v)) {}
+    mino_state *s;
+    mino_ref   *r;
+    MiRef(mino_state *st, mino_val *v) : s(st), r(mino_ref_new(st, v)) {}
     ~MiRef() { mino_unref(s, r); }
     MiRef(const MiRef&) = delete;
-    mino_val_t *get() { return mino_deref(r); }
+    mino_val *get() { return mino_deref(r); }
 };
 
 /* --- Tests --- */
@@ -79,7 +79,7 @@ static void test_raii_lifecycle(void)
     {
         MiState s;
         MiEnv env(s);
-        mino_val_t *r = mino_eval_string(s, "(+ 1 2 3)", env);
+        mino_val *r = mino_eval_string(s, "(+ 1 2 3)", env);
         ASSERT(r != nullptr, "eval failed");
         long long val;
         ASSERT(mino_to_int(r, &val), "not int");
@@ -94,7 +94,7 @@ static void test_raii_ref(void)
     TEST("RAII ref: value survives scope");
     MiState s;
     MiEnv env(s);
-    mino_val_t *v = mino_eval_string(s, "[1 2 3]", env);
+    mino_val *v = mino_eval_string(s, "[1 2 3]", env);
     ASSERT(v != nullptr, "eval failed");
     MiRef ref(s, v);
 
@@ -114,7 +114,7 @@ static void test_cpp_string_interop(void)
     MiEnv env(s);
 
     std::string input = "hello from C++";
-    mino_val_t *v = mino_string(s, input.c_str());
+    mino_val *v = mino_string(s, input.c_str());
     ASSERT(v != nullptr, "string failed");
 
     const char *out;
@@ -132,17 +132,17 @@ static void test_cpp_vector_to_mino(void)
     MiEnv env(s);
 
     std::vector<int> cpp_vec = {10, 20, 30, 40, 50};
-    std::vector<mino_val_t*> vals;
+    std::vector<mino_val*> vals;
     for (int x : cpp_vec) {
         vals.push_back(mino_int(s, x));
     }
-    mino_val_t *mv = mino_vector(s, vals.data(), vals.size());
+    mino_val *mv = mino_vector(s, vals.data(), vals.size());
     ASSERT(mv != nullptr, "vector failed");
     ASSERT(count_collection(s, mv) == 5, "wrong length");
 
     /* Pass to mino for processing, get back */
     mino_env_set(s, env, "data", mv);
-    mino_val_t *r = mino_eval_string(s,
+    mino_val *r = mino_eval_string(s,
         "(reduce + 0 data)", env);
     ASSERT(r != nullptr, "eval failed");
     long long sum;
@@ -154,7 +154,7 @@ static void test_cpp_vector_to_mino(void)
 /* Host callback using C++ closure via static dispatch */
 static std::function<long long(long long)> g_transform;
 
-static mino_val_t *prim_cpp_transform(mino_state_t *S, mino_val_t *args, mino_env_t *env)
+static mino_val *prim_cpp_transform(mino_state *S, mino_val *args, mino_env *env)
 {
     (void)env;
     if (!mino_is_cons(args)) return mino_nil(S);
@@ -174,7 +174,7 @@ static void test_cpp_closure_as_primitive(void)
 
     mino_register_fn(s, env, "cpp-transform", prim_cpp_transform);
 
-    mino_val_t *r = mino_eval_string(s,
+    mino_val *r = mino_eval_string(s,
         "(into [] (map cpp-transform [1 2 3 4 5]))", env);
     ASSERT(r != nullptr, "eval failed");
     ASSERT(mino_is_vector(r), "not vector");
@@ -182,7 +182,7 @@ static void test_cpp_closure_as_primitive(void)
 
     /* Verify: [7 14 21 28 35] */
     mino_env_set(s, env, "result", r);
-    mino_val_t *check = mino_eval_string(s, "(nth result 2)", env);
+    mino_val *check = mino_eval_string(s, "(nth result 2)", env);
     long long val;
     ASSERT(mino_to_int(check, &val), "not int");
     ASSERT(val == 21, "expected 21");
@@ -196,19 +196,19 @@ static void test_cpp_map_interop(void)
     MiEnv env(s);
 
     /* Build a map: {"name" => "alice", "age" => 30} */
-    mino_val_t *keys[2] = {
+    mino_val *keys[2] = {
         mino_keyword(s, "name"),
         mino_keyword(s, "age")
     };
-    mino_val_t *vals[2] = {
+    mino_val *vals[2] = {
         mino_string(s, "alice"),
         mino_int(s, 30)
     };
-    mino_val_t *m = mino_map(s, keys, vals, 2);
+    mino_val *m = mino_map(s, keys, vals, 2);
     ASSERT(m != nullptr, "map failed");
 
     mino_env_set(s, env, "person", m);
-    mino_val_t *r = mino_eval_string(s,
+    mino_val *r = mino_eval_string(s,
         "(str (get person :name) \" is \" (get person :age))", env);
     ASSERT(r != nullptr, "eval failed");
     const char *str;
@@ -224,14 +224,14 @@ static void test_exception_from_cpp(void)
     MiState s;
     MiEnv env(s);
 
-    mino_val_t *fn = mino_eval_string(s,
+    mino_val *fn = mino_eval_string(s,
         "(fn (x) (if (< x 0) (throw \"negative!\") (* x x)))", env);
     ASSERT(fn != nullptr, "eval fn failed");
     MiRef fn_ref(s, fn);
 
     /* Good call */
-    mino_val_t *args1 = mino_cons(s, mino_int(s, 5), mino_nil(s));
-    mino_val_t *out = nullptr;
+    mino_val *args1 = mino_cons(s, mino_int(s, 5), mino_nil(s));
+    mino_val *out = nullptr;
     int rc = mino_pcall(s, fn_ref.get(), args1, env, &out, NULL);
     ASSERT(rc == 0, "pcall should succeed");
     long long val;
@@ -241,8 +241,8 @@ static void test_exception_from_cpp(void)
     /* Bad call. pcall captures the raw throw payload via out_ex instead
      * of publishing through mino_last_error -- callers like agent
      * dispatch want the original ex-info / string the user threw. */
-    mino_val_t *args2 = mino_cons(s, mino_int(s, -3), mino_nil(s));
-    mino_val_t *ex = nullptr;
+    mino_val *args2 = mino_cons(s, mino_int(s, -3), mino_nil(s));
+    mino_val *ex = nullptr;
     rc = mino_pcall(s, fn_ref.get(), args2, env, &out, &ex);
     ASSERT(rc == -1, "pcall should fail");
     ASSERT(ex != nullptr, "pcall should surface the throw payload");
@@ -261,12 +261,12 @@ static void test_sandboxed_untrusted_code(void)
     TEST("Sandbox: run untrusted code with limits");
     MiState s;
     /* Deliberately NOT using mino_env_new_default -- core only, no I/O */
-    mino_env_t *sandbox = mino_env_new(s);
+    mino_env *sandbox = mino_env_new(s);
     mino_install(s, sandbox, MINO_CAP_DEFAULT);
 
     /* Untrusted code can't do I/O. slurp is gated on MINO_CAP_IO, which
      * MINO_CAP_DEFAULT omits, so the symbol stays unresolved. */
-    mino_val_t *r = mino_eval_string(s, "(slurp \"/etc/passwd\")", sandbox);
+    mino_val *r = mino_eval_string(s, "(slurp \"/etc/passwd\")", sandbox);
     ASSERT(r == nullptr, "slurp should be unavailable");
 
     /* Set step limit to prevent infinite loops */

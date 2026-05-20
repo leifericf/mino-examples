@@ -22,17 +22,17 @@
  * Plugins receive immutable documents and return transformed copies.
  * The plugin cannot modify the original through the value it receives. */
 
-static mino_val_t *make_document(mino_state_t *S,
+static mino_val *make_document(mino_state *S,
                                  const char *title,
                                  const char *body,
                                  const std::vector<const char *> &tags)
 {
-    std::vector<mino_val_t *> tag_vals;
+    std::vector<mino_val *> tag_vals;
     for (auto *t : tags)
         tag_vals.push_back(mino_keyword(S, t));
-    mino_val_t *tag_vec = mino_vector(S, tag_vals.data(), tag_vals.size());
+    mino_val *tag_vec = mino_vector(S, tag_vals.data(), tag_vals.size());
 
-    mino_val_t *ks[3], *vs[3];
+    mino_val *ks[3], *vs[3];
     ks[0] = mino_keyword(S, "title"); vs[0] = mino_string(S, title);
     ks[1] = mino_keyword(S, "body");  vs[1] = mino_string(S, body);
     ks[2] = mino_keyword(S, "tags");  vs[2] = tag_vec;
@@ -65,47 +65,47 @@ static const char *filter_plugin =
 /* ── Embed ─────────────────────────────────────────────────────────── */
 
 /* Helper: call a mino function by name. */
-static mino_val_t *call1(mino_state_t *S, mino_env_t *env,
-                         const char *name, mino_val_t *arg)
+static mino_val *call1(mino_state *S, mino_env *env,
+                         const char *name, mino_val *arg)
 {
-    mino_val_t *fn   = mino_env_get(env, name);
-    mino_val_t *args = mino_cons(S, arg, mino_nil(S));
+    mino_val *fn   = mino_env_get(env, name);
+    mino_val *args = mino_cons(S, arg, mino_nil(S));
     return fn ? mino_call(S, fn, args, env) : nullptr;
 }
 
-static mino_val_t *call2(mino_state_t *S, mino_env_t *env,
-                         const char *name, mino_val_t *a, mino_val_t *b)
+static mino_val *call2(mino_state *S, mino_env *env,
+                         const char *name, mino_val *a, mino_val *b)
 {
-    mino_val_t *fn   = mino_env_get(env, name);
-    mino_val_t *args = mino_cons(S, a, mino_cons(S, b, mino_nil(S)));
+    mino_val *fn   = mino_env_get(env, name);
+    mino_val *args = mino_cons(S, a, mino_cons(S, b, mino_nil(S)));
     return fn ? mino_call(S, fn, args, env) : nullptr;
 }
 
 int main()
 {
-    mino_state_t *S = mino_state_new();
+    mino_state *S = mino_state_new();
 
     /* Build documents from the C++ side. Root each one so the GC
      * cannot collect them while subsequent allocations happen. */
-    mino_ref_t *r1 = mino_ref(S, make_document(S, "Getting Started",
+    mino_ref *r1 = mino_ref_new(S, make_document(S, "Getting Started",
         "This guide walks through the initial setup process for new users",
         {"guide", "beginner"}));
-    mino_ref_t *r2 = mino_ref(S, make_document(S, "API Reference",
+    mino_ref *r2 = mino_ref_new(S, make_document(S, "API Reference",
         "Complete reference for all public functions and types in the system",
         {"reference", "api"}));
-    mino_ref_t *r3 = mino_ref(S, make_document(S, "Performance Tuning",
+    mino_ref *r3 = mino_ref_new(S, make_document(S, "Performance Tuning",
         "Advanced techniques for optimizing throughput and reducing latency in production deployments",
         {"guide", "advanced"}));
 
-    mino_val_t *doc_items[] = {mino_deref(r1), mino_deref(r2), mino_deref(r3)};
-    mino_ref_t *docs_ref = mino_ref(S, mino_vector(S, doc_items, 3));
+    mino_val *doc_items[] = {mino_deref(r1), mino_deref(r2), mino_deref(r3)};
+    mino_ref *docs_ref = mino_ref_new(S, mino_vector(S, doc_items, 3));
     mino_unref(S, r1);
     mino_unref(S, r2);
     mino_unref(S, r3);
 
     /* Plugin 1: metadata enrichment (sandboxed, no I/O). */
     {
-        mino_env_t *env = mino_env_new(S);
+        mino_env *env = mino_env_new(S);
         mino_install(S, env, MINO_CAP_DEFAULT);
 
         if (!mino_eval_string(S, metadata_plugin, env)) {
@@ -115,7 +115,7 @@ int main()
 
         printf("=== metadata plugin ===\n");
         mino_env_set(S, env, "docs", mino_deref(docs_ref));
-        mino_val_t *enriched = mino_eval_string(S,
+        mino_val *enriched = mino_eval_string(S,
             "(mapv enrich docs)", env);
         if (enriched)
             mino_println(S, enriched);
@@ -125,7 +125,7 @@ int main()
 
     /* Plugin 2: tag filter (separate sandbox). */
     {
-        mino_env_t *env = mino_env_new(S);
+        mino_env *env = mino_env_new(S);
         mino_install(S, env, MINO_CAP_DEFAULT);
 
         if (!mino_eval_string(S, filter_plugin, env)) {
@@ -134,9 +134,9 @@ int main()
         }
 
         printf("\n=== filter plugin ===\n");
-        mino_val_t *tag_items[] = {mino_keyword(S, "guide")};
-        mino_val_t *tags = mino_set(S, tag_items, 1);
-        mino_val_t *result = call2(S, env, "filter-docs",
+        mino_val *tag_items[] = {mino_keyword(S, "guide")};
+        mino_val *tags = mino_set(S, tag_items, 1);
+        mino_val *result = call2(S, env, "filter-docs",
                                    mino_deref(docs_ref), tags);
         if (result) {
             printf("guides: ");
@@ -148,13 +148,13 @@ int main()
 
     /* Protected call: demonstrate error isolation. */
     {
-        mino_env_t *env = mino_env_new(S);
+        mino_env *env = mino_env_new(S);
         mino_install(S, env, MINO_CAP_DEFAULT);
         mino_eval_string(S, metadata_plugin, env);
 
         printf("\n=== error isolation ===\n");
-        mino_val_t *bad = mino_string(S, "not a document");
-        mino_val_t *out = nullptr;
+        mino_val *bad = mino_string(S, "not a document");
+        mino_val *out = nullptr;
         int rc = mino_pcall(S, mino_env_get(env, "enrich"),
                             mino_cons(S, bad, mino_nil(S)), env, &out,
                             nullptr);
