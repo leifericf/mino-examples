@@ -39,6 +39,9 @@ use-cases/console
 use-cases/data_pipeline
 use-cases/event_processing
 use-cases/game_scripting
+use-cases/packet_parsing
+use-cases/chess_bitboard
+use-cases/cpp_raii
 use-cases/plugins
 use-cases/rules_engine
 mino/src/core_mino.h

@@ -80,6 +80,7 @@ $(eval $(call gen-mino-header,lib/clojure/repl.clj,lib_clojure_repl))
 $(eval $(call gen-mino-header,lib/clojure/stacktrace.clj,lib_clojure_stacktrace))
 $(eval $(call gen-mino-header,lib/clojure/datafy.clj,lib_clojure_datafy))
 $(eval $(call gen-mino-header,lib/clojure/core/protocols.clj,lib_clojure_core_protocols))
+$(eval $(call gen-mino-header,lib/clojure/core/reducers.clj,lib_clojure_core_reducers))
 $(eval $(call gen-mino-header,lib/clojure/instant.clj,lib_clojure_instant))
 $(eval $(call gen-mino-header,lib/clojure/spec/alpha.clj,lib_clojure_spec_alpha))
 $(eval $(call gen-mino-header,lib/clojure/core/specs/alpha.clj,lib_clojure_core_specs_alpha))
@@ -105,6 +106,7 @@ MINO_GEN_HEADERS := mino/src/core_mino.h \
                     mino/src/lib_clojure_stacktrace.h \
                     mino/src/lib_clojure_datafy.h \
                     mino/src/lib_clojure_core_protocols.h \
+                    mino/src/lib_clojure_core_reducers.h \
                     mino/src/lib_clojure_instant.h \
                     mino/src/lib_clojure_spec_alpha.h \
                     mino/src/lib_clojure_core_specs_alpha.h \
