@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Two new use-cases under `use-cases/` showcase the
+  Erlang-inspired bit-syntax surface that ships in mino v0.415-
+  v0.418:
+  - `packet_parsing.cpp` decodes an IPv4 header field-by-field
+    with `let-bits`. Sub-byte fields (4-bit version, 4-bit IHL,
+    6-bit DSCP, 3-bit flags, 13-bit fragment offset) destructure
+    cleanly without shift/mask boilerplate.
+  - `chess_bitboard.cpp` represents piece positions as 64-bit
+    bitboards (one `MINO_BYTES` per piece type) and computes
+    knight attacks plus all-white occupancy using `bits-get` +
+    mino's built-in bitwise primitives.
+  Both compile against mino once the submodule reaches v0.418
+  (the new constructors are absent in earlier builds).
+
 - Tracking mino v0.383.0 (embedder UX cycle, Phases 1–2).
   Phase 1: opaque `struct mino_val`, a single
   `mino_install(S, env, caps)` bitmask entry replacing the 22
