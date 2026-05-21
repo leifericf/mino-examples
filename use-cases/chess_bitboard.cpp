@@ -137,7 +137,7 @@ static const char *script =
     "    (for [r (range 7 -1 -1)\n"
     "          f (range 8)\n"
     "          :let [sq (+ f (* 8 r))]]\n"
-    "      (str (if (bit-test v sq) \\# \\.)\n"
+    "      (str (if (bit-test v sq) \"#\" \".\")\n"
     "           (if (= 7 f) \"\\n\" \"\")))))\n"
     "\n"
     "(let [knights      (bb->long (:white-knights position))\n"
