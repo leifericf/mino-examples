@@ -57,6 +57,14 @@ make test-use-cases
 
 Builds and runs every use-case demo; exits 0 on a clean run.
 
+## Cross-compiling your embedding
+
+[`docs/cross-compile-with-zig.md`](docs/cross-compile-with-zig.md) —
+ship your mino-embedding host program to Linux (x86_64 / ARM64) and
+Windows from one machine with `zig cc`: the amalgamation plus one
+command per target. Optional convenience; mino itself needs only a
+C99 compiler.
+
 ## How mino ships
 
 See [Zero dependencies, vendored first](https://mino-lang.org/documentation/vendored-first/)
