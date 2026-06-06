@@ -460,7 +460,7 @@ static void test_atom_api(void)
     ASSERT(mino_to_int(v, &val), "not an int");
     ASSERT(val == 10, "expected 10");
 
-    mino_atom_reset(a, mino_int(S, 20));
+    mino_atom_reset(S, a, mino_int(S, 20));
     v = mino_atom_deref(a);
     ASSERT(mino_to_int(v, &val), "not an int");
     ASSERT(val == 20, "expected 20");
