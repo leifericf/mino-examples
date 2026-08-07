@@ -270,7 +270,7 @@ static void test_sandboxed_untrusted_code(void)
     ASSERT(r == nullptr, "slurp should be unavailable");
 
     /* Set step limit to prevent infinite loops */
-    mino_set_limit(s, MINO_LIMIT_STEPS, 10000);
+    mino_set_option(s, MINO_OPT_LIMIT_STEPS, 10000);
 
     /* Safe code works */
     r = mino_eval_string(s, "(reduce + 0 (range 100))", sandbox);

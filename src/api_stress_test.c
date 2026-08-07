@@ -248,7 +248,7 @@ static void test_step_limit(void)
     mino_state *S = mino_state_new();
     mino_env *env = mino_env_new_default(S);
 
-    mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 1000);
     mino_val *r = mino_eval_string(S,
         "(loop [i 0] (recur (+ i 1)))", env);
     ASSERT(r == NULL, "expected NULL from step limit");
@@ -257,7 +257,7 @@ static void test_step_limit(void)
     ASSERT(strstr(err, "step limit") != NULL, "wrong error message");
 
     /* Reset limit and verify normal eval works. */
-    mino_set_limit(S, MINO_LIMIT_STEPS, 0);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 0);
     r = mino_eval_string(S, "(+ 1 1)", env);
     ASSERT(r != NULL, "eval after limit reset failed");
 
@@ -272,7 +272,7 @@ static void test_heap_limit(void)
     mino_state *S = mino_state_new();
     mino_env *env = mino_env_new_default(S);
 
-    mino_set_limit(S, MINO_LIMIT_HEAP, 1024 * 64); /* 64KB */
+    mino_set_option(S, MINO_OPT_LIMIT_HEAP, 1024 * 64); /* 64KB */
     mino_val *r = mino_eval_string(S,
         "(into [] (range 100000))", env);
     ASSERT(r == NULL, "expected NULL from heap limit");

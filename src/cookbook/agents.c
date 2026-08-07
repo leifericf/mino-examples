@@ -28,7 +28,7 @@ int main(void)
      * grant at least 2; we ask for 4 here to leave headroom for any
      * additional futures. The standalone REPL bumps thread_limit to
      * cpu_count automatically; embedders opt in explicitly. */
-    mino_set_thread_limit(S, 4);
+    mino_set_option(S, MINO_OPT_THREAD_LIMIT, 4);
     mino_install(S, env, MINO_CAP_AGENT);
 
     /* (fn [v] (inc v)) - increment the agent's value. */

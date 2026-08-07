@@ -115,7 +115,7 @@ static void test_limit_with_lazy(void)
 
     /* Set a tight step limit. Use a loop/recur form (not lazy) so
      * the step limit check fires in eval_impl and returns NULL. */
-    mino_set_limit(S, MINO_LIMIT_STEPS, 1000);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 1000);
 
     mino_val *r = mino_eval_string(S,
         "(loop [i 0] (recur (+ i 1)))", env);
@@ -124,7 +124,7 @@ static void test_limit_with_lazy(void)
     CHK(strstr(err, "step limit") != NULL, "wrong error");
 
     /* Reset limit and do a small eval */
-    mino_set_limit(S, MINO_LIMIT_STEPS, 0);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 0);
     r = mino_eval_string(S, "(+ 1 1)", env);
     CHK(r != NULL, "eval after limit reset failed");
 

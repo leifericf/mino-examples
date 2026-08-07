@@ -108,7 +108,7 @@ int main(void)
     mino_install(S, env, MINO_CAP_IO);
 
     /* Limit scripts to 100k eval steps to prevent infinite loops. */
-    mino_set_limit(S, MINO_LIMIT_STEPS, 100000);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 100000);
 
     /* Register game functions. */
     mino_register_fn(S, env, "pos",    host_pos);

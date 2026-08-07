@@ -116,7 +116,7 @@ int main()
     mino_env   *env = mino_env_new_default(S);
 
     /* Step limit: prevent runaway scripts. */
-    mino_set_limit(S, MINO_LIMIT_STEPS, 100000);
+    mino_set_option(S, MINO_OPT_LIMIT_STEPS, 100000);
 
     /* Register host functions. */
     mino_register_fn(S, env, "get-val",    host_get);

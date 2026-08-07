@@ -140,8 +140,8 @@ $(filter-out src/embed_cpp,$(CXX_BINS)): %: %.cpp $(MINO_OBJS) mino/src/mino.h
 $(USE_CASE_BINS): %: %.cpp $(MINO_OBJS) mino/src/mino.h
 	$(CXX) $(CXXFLAGS) -o $@ $< $(MINO_OBJS) $(LIBS)
 
-$(REGEX_BIN): src/regex_thread_test.c mino/src/regex/re.c mino/src/regex/re.h
-	$(CC) $(CFLAGS) -pthread -o $@ src/regex_thread_test.c mino/src/regex/re.c
+$(REGEX_BIN): src/regex_thread_test.c mino/src/regex/re.c mino/src/regex/re_compile.c mino/src/regex/re_match.c mino/src/regex/re.h
+	$(CC) $(CFLAGS) -pthread -o $@ src/regex_thread_test.c mino/src/regex/re.c mino/src/regex/re_compile.c mino/src/regex/re_match.c
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
