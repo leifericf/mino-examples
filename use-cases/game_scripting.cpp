@@ -79,16 +79,16 @@ static mino_val *host_entity(mino_state *S, mino_val *args,
 static mino_val *host_entities(mino_state *S, mino_val *,
                                  mino_env *)
 {
-    std::vector<mino_ref *> refs;
+    std::vector<mino_root *> refs;
     for (auto &e : world)
-        refs.push_back(mino_ref_new(S, entity_to_map(S, e)));
+        refs.push_back(mino_root_new(S, entity_to_map(S, e)));
 
     std::vector<mino_val *> items;
     for (auto *r : refs)
-        items.push_back(mino_deref(r));
+        items.push_back(mino_root_get(r));
     mino_val *result = mino_vector(S, items.data(), items.size());
     for (auto *r : refs)
-        mino_unref(S, r);
+        mino_unroot(S, r);
     return result;
 }
 

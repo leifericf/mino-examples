@@ -42,21 +42,21 @@ static void test_eval_then_call_lazy(void)
         "(fn [n] (reduce + 0 (take n (range))))", env);
     CHK(fn != NULL, "fn creation failed");
 
-    mino_ref *fn_ref = mino_ref_new(S, fn);
+    mino_root *fn_ref = mino_root_new(S, fn);
 
     /* Call it from C with different values */
     long long results[] = {0, 0, 1, 3, 6, 10};
     int i;
     for (i = 0; i <= 5; i++) {
         mino_val *args = mino_cons(S, mino_int(S, i), mino_nil(S));
-        mino_val *r = mino_call(S, mino_deref(fn_ref), args, env);
+        mino_val *r = mino_call(S, mino_root_get(fn_ref), args, env);
         CHK(r != NULL, "call failed");
         long long v;
         CHK(mino_to_int(r, &v), "not int");
         CHK(v == results[i], "wrong result");
     }
 
-    mino_unref(S, fn_ref);
+    mino_unroot(S, fn_ref);
     mino_env_free(S, env);
     mino_state_free(S);
     OK();
@@ -257,10 +257,10 @@ static void test_gc_stress_integration(void)
         CHK(v != NULL, "eval in s1 failed");
 
         /* Ref it */
-        mino_ref *ref = mino_ref_new(s1, v);
+        mino_root *ref = mino_root_new(s1, v);
 
         /* Clone to s2 */
-        mino_val *cloned = mino_clone(s2, s1, mino_deref(ref));
+        mino_val *cloned = mino_clone(s2, s1, mino_root_get(ref));
         CHK(cloned != NULL, "clone failed");
 
         /* Do more allocation in both states */
@@ -268,9 +268,9 @@ static void test_gc_stress_integration(void)
         mino_eval_string(s2, "(into [] (range 50))", e2);
 
         /* Verify ref still valid */
-        CHK(mino_is_map(mino_deref(ref)), "ref broken after alloc");
+        CHK(mino_is_map(mino_root_get(ref)), "ref broken after alloc");
 
-        mino_unref(s1, ref);
+        mino_unroot(s1, ref);
     }
 
     mino_env_free(s1, e1); mino_env_free(s2, e2);

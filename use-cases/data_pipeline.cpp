@@ -96,19 +96,19 @@ int main()
     };
 
     /* Push data into mino as a vector of maps.
-     * Each record is rooted via mino_ref so the GC cannot collect
+     * Each record is rooted via mino_root so the GC cannot collect
      * earlier records while later ones are still being allocated. */
-    std::vector<mino_ref *> refs;
+    std::vector<mino_root *> refs;
     for (auto &m : batch)
-        refs.push_back(mino_ref_new(S, make_measurement(S, m)));
+        refs.push_back(mino_root_new(S, make_measurement(S, m)));
 
     std::vector<mino_val *> records;
     for (auto *r : refs)
-        records.push_back(mino_deref(r));
+        records.push_back(mino_root_get(r));
     mino_env_set(S, env, "data",
                  mino_vector(S, records.data(), records.size()));
     for (auto *r : refs)
-        mino_unref(S, r);
+        mino_unroot(S, r);
 
     /* Run the pipeline. */
     mino_val *result = mino_eval_string(S, script, env);

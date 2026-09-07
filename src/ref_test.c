@@ -1,5 +1,5 @@
 /*
- * ref_test.c -- exercise mino_ref and handle finalizers.
+ * ref_test.c -- exercise mino_root and handle finalizers.
  *
  * Build:
  *   cc -std=c99 -I.. -o ref_test ref_test.c ../mino.o ../re.o -lm
@@ -36,7 +36,7 @@ int main(void)
             "(vec (range 100))", env);
         ASSERT(v != NULL, "eval range failed");
 
-        mino_ref *r = mino_ref_new(S, v);
+        mino_root *r = mino_root_new(S, v);
 
         /* Force several GC cycles by allocating lots of garbage. */
         mino_eval_string(S,
@@ -45,11 +45,11 @@ int main(void)
             env);
 
         /* The ref'd value should still be alive and correct. */
-        mino_val *got = mino_deref(r);
+        mino_val *got = mino_root_get(r);
         ASSERT(got != NULL, "deref returned NULL");
         ASSERT(got == v, "deref returned different pointer");
 
-        mino_unref(S, r);
+        mino_unroot(S, r);
     }
 
     /* ---- Test 2: multiple refs, unref order ---- */
@@ -58,18 +58,18 @@ int main(void)
         mino_val *b = mino_string(S, "hello");
         mino_val *c = mino_float(S, 3.14);
 
-        mino_ref *ra = mino_ref_new(S, a);
-        mino_ref *rb = mino_ref_new(S, b);
-        mino_ref *rc = mino_ref_new(S, c);
+        mino_root *ra = mino_root_new(S, a);
+        mino_root *rb = mino_root_new(S, b);
+        mino_root *rc = mino_root_new(S, c);
 
         /* Unref middle first. */
-        mino_unref(S, rb);
+        mino_unroot(S, rb);
 
-        ASSERT(mino_deref(ra) == a, "ra deref failed after rb unref");
-        ASSERT(mino_deref(rc) == c, "rc deref failed after rb unref");
+        ASSERT(mino_root_get(ra) == a, "ra deref failed after rb unref");
+        ASSERT(mino_root_get(rc) == c, "rc deref failed after rb unref");
 
-        mino_unref(S, ra);
-        mino_unref(S, rc);
+        mino_unroot(S, ra);
+        mino_unroot(S, rc);
     }
 
     /* ---- Test 3: handle finalizer fires on GC ---- */
@@ -99,7 +99,7 @@ int main(void)
         strcpy(data2, "keep-alive");
 
         mino_val *h = mino_handle_ex(S, data2, "kept", test_finalizer);
-        mino_ref *rh = mino_ref_new(S, h);
+        mino_root *rh = mino_root_new(S, h);
 
         /* Force GC. */
         mino_eval_string(S,
@@ -109,10 +109,10 @@ int main(void)
 
         ASSERT(finalized_count == 0,
                "finalizer fired despite ref");
-        ASSERT(mino_handle_ptr(mino_deref(rh)) == data2,
+        ASSERT(mino_handle_ptr(mino_root_get(rh)) == data2,
                "handle pointer changed");
 
-        mino_unref(S, rh);
+        mino_unroot(S, rh);
         /* data2 will be freed when state is freed (finalizer fires during
          * state teardown sweep, or we accept the leak for this test). */
     }

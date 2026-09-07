@@ -40,7 +40,7 @@ int main(void)
     env = mino_env_new_default(S);
 
     /* Step 3: evaluate a script. The result is borrowed -- it lives
-     *         until the next GC cycle unless rooted via mino_ref_new. */
+     *         until the next GC cycle unless rooted via mino_root_new. */
     result = mino_eval_string(S,
         "(reduce + 0 (map (fn [x] (* x x)) (range 1 11)))",
         env);

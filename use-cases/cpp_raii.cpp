@@ -48,6 +48,6 @@ int main()
     }
 
     /* state, env, and pin all dispose in destruct order. No manual
-     * mino_state_free / mino_env_free / mino_unref calls. */
+     * mino_state_free / mino_env_free / mino_unroot calls. */
     return 0;
 }

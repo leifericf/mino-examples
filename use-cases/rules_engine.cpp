@@ -98,19 +98,19 @@ int main()
         {"Eve",     31, 690, 67000.0, 24000.0, 3},
     };
 
-    /* Convert to a mino vector. Each record is rooted via mino_ref
+    /* Convert to a mino vector. Each record is rooted via mino_root
      * so earlier records survive GC while later ones are allocated. */
-    std::vector<mino_ref *> refs;
+    std::vector<mino_root *> refs;
     for (auto &a : data)
-        refs.push_back(mino_ref_new(S, make_applicant(S, a)));
+        refs.push_back(mino_root_new(S, make_applicant(S, a)));
 
     std::vector<mino_val *> records;
     for (auto *r : refs)
-        records.push_back(mino_deref(r));
+        records.push_back(mino_root_get(r));
     mino_env_set(S, env, "applicants",
                  mino_vector(S, records.data(), records.size()));
     for (auto *r : refs)
-        mino_unref(S, r);
+        mino_unroot(S, r);
 
     /* Evaluate the rules script. */
     mino_val *result = mino_eval_string(S, script, env);

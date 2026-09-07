@@ -128,7 +128,7 @@ static void test_ref_survives_gc(void)
     /* Create a value and ref it. */
     mino_val *v = mino_eval_string(S, "[1 2 3 4 5]", env);
     ASSERT(v != NULL, "eval failed");
-    mino_ref *ref = mino_ref_new(S, v);
+    mino_root *ref = mino_root_new(S, v);
 
     /* Force many allocations to trigger GC. */
     int i;
@@ -137,12 +137,12 @@ static void test_ref_survives_gc(void)
     }
 
     /* The ref should still be valid. */
-    mino_val *derefed = mino_deref(ref);
+    mino_val *derefed = mino_root_get(ref);
     ASSERT(derefed != NULL, "deref returned NULL");
     ASSERT(mino_is_vector(derefed), "not a vector");
     ASSERT(count_collection(S, derefed) == 5, "wrong length");
 
-    mino_unref(S, ref);
+    mino_unroot(S, ref);
     mino_env_free(S, env);
     mino_state_free(S);
     PASS();

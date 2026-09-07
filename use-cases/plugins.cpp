@@ -87,21 +87,21 @@ int main()
 
     /* Build documents from the C++ side. Root each one so the GC
      * cannot collect them while subsequent allocations happen. */
-    mino_ref *r1 = mino_ref_new(S, make_document(S, "Getting Started",
+    mino_root *r1 = mino_root_new(S, make_document(S, "Getting Started",
         "This guide walks through the initial setup process for new users",
         {"guide", "beginner"}));
-    mino_ref *r2 = mino_ref_new(S, make_document(S, "API Reference",
+    mino_root *r2 = mino_root_new(S, make_document(S, "API Reference",
         "Complete reference for all public functions and types in the system",
         {"reference", "api"}));
-    mino_ref *r3 = mino_ref_new(S, make_document(S, "Performance Tuning",
+    mino_root *r3 = mino_root_new(S, make_document(S, "Performance Tuning",
         "Advanced techniques for optimizing throughput and reducing latency in production deployments",
         {"guide", "advanced"}));
 
-    mino_val *doc_items[] = {mino_deref(r1), mino_deref(r2), mino_deref(r3)};
-    mino_ref *docs_ref = mino_ref_new(S, mino_vector(S, doc_items, 3));
-    mino_unref(S, r1);
-    mino_unref(S, r2);
-    mino_unref(S, r3);
+    mino_val *doc_items[] = {mino_root_get(r1), mino_root_get(r2), mino_root_get(r3)};
+    mino_root *docs_ref = mino_root_new(S, mino_vector(S, doc_items, 3));
+    mino_unroot(S, r1);
+    mino_unroot(S, r2);
+    mino_unroot(S, r3);
 
     /* Plugin 1: metadata enrichment (sandboxed, no I/O). */
     {
@@ -114,7 +114,7 @@ int main()
         }
 
         printf("=== metadata plugin ===\n");
-        mino_env_set(S, env, "docs", mino_deref(docs_ref));
+        mino_env_set(S, env, "docs", mino_root_get(docs_ref));
         mino_val *enriched = mino_eval_string(S,
             "(mapv enrich docs)", env);
         if (enriched)
@@ -137,7 +137,7 @@ int main()
         mino_val *tag_items[] = {mino_keyword(S, "guide")};
         mino_val *tags = mino_set(S, tag_items, 1);
         mino_val *result = call2(S, env, "filter-docs",
-                                   mino_deref(docs_ref), tags);
+                                   mino_root_get(docs_ref), tags);
         if (result) {
             printf("guides: ");
             mino_println(S, result);
@@ -164,6 +164,6 @@ int main()
         mino_env_free(S, env);
     }
 
-    mino_unref(S, docs_ref);
+    mino_unroot(S, docs_ref);
     mino_state_free(S);
 }

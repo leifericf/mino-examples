@@ -64,11 +64,11 @@ struct MiEnv {
 
 struct MiRef {
     mino_state *s;
-    mino_ref   *r;
-    MiRef(mino_state *st, mino_val *v) : s(st), r(mino_ref_new(st, v)) {}
-    ~MiRef() { mino_unref(s, r); }
+    mino_root  *r;
+    MiRef(mino_state *st, mino_val *v) : s(st), r(mino_root_new(st, v)) {}
+    ~MiRef() { mino_unroot(s, r); }
     MiRef(const MiRef&) = delete;
-    mino_val *get() { return mino_deref(r); }
+    mino_val *get() { return mino_root_get(r); }
 };
 
 /* --- Tests --- */

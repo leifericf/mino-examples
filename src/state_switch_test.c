@@ -181,13 +181,13 @@ static void test_ref_churn(void)
 
     for (i = 0; i < 1000; i++) {
         mino_val *v = mino_int(S, (long long)i);
-        mino_ref *r = mino_ref_new(S, v);
+        mino_root *r = mino_root_new(S, v);
         /* Do some allocation to trigger GC */
         mino_eval_string(S, "(into [] (range 10))", env);
         long long val;
-        CHK(mino_to_int(mino_deref(r), &val), "deref failed");
+        CHK(mino_to_int(mino_root_get(r), &val), "deref failed");
         CHK(val == (long long)i, "wrong value");
-        mino_unref(S, r);
+        mino_unroot(S, r);
     }
 
     mino_env_free(S, env);
