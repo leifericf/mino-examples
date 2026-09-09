@@ -5,14 +5,12 @@
  * distribution, evaluating a script, extracting the result back to C,
  * tearing down. Five minutes from zero to running.
  *
- * Build (using the amalgamation):
- *   cd mino && ./mino task amalgamate
- *   cc -std=c99 -O2 -Imino/dist -c mino/dist/mino.c -o dist/mino.o
- *   cc -std=c99 -O2 -Imino/dist src/cookbook/five_minutes.c \
- *      dist/mino.o -lm -lpthread -o src/cookbook/five_minutes
+ * Build (from the mino-examples root):
+ *   ./mino/mino task build
  *
- * Or via the make recipe used throughout this repo:
- *   make src/cookbook/five_minutes
+ * Or compile just this file against the mino amalgamation:
+ *   cc -std=c99 -O2 -Imino/dist src/cookbook/five_minutes.c \
+ *      mino/dist/mino.o -lm -lpthread -o src/cookbook/five_minutes
  *
  * Run:
  *   ./src/cookbook/five_minutes

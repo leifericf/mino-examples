@@ -16,9 +16,11 @@
  * shift / mask arithmetic. The bit syntax IS the parser.
  *
  * Build:
- *   make
- *   c++ -std=c++17 -Imino/src -o use-cases/packet_parsing \
- *       use-cases/packet_parsing.cpp mino/src/[a-z]*.o -lm
+ *   ./mino/mino task build
+ *
+ * Or compile just this file against the mino amalgamation:
+ *   c++ -std=c++17 -Imino/dist -o use-cases/packet_parsing \
+ *       use-cases/packet_parsing.cpp mino/dist/mino.o -lm -lpthread
  */
 
 #include "mino.h"

@@ -54,11 +54,11 @@
  * wrapped state for mutable identity.
  *
  * Build (from repo root):
- *   make src/cookbook/handle_record_atom_choice
+ *   ./mino/mino task build
  *
- * Or via the amalgamation:
+ * Or compile just this file against the mino amalgamation:
  *   cc -std=c99 -O2 -Imino/dist src/cookbook/handle_record_atom_choice.c \
- *      dist/mino.o -lm -lpthread -o src/cookbook/handle_record_atom_choice
+ *      mino/dist/mino.o -lm -lpthread -o src/cookbook/handle_record_atom_choice
  */
 
 #include "mino.h"

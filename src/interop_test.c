@@ -5,7 +5,7 @@
  * tests/interop_test.clj which exercises all four host primitives
  * and verifies error handling.
  *
- * Build: make test-interop
+ * Build: ./mino/mino task build
  */
 
 #include "mino.h"

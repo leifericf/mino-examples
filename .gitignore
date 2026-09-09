@@ -43,7 +43,7 @@ use-cases/chess_bitboard
 use-cases/cpp_raii
 use-cases/plugins
 use-cases/rules_engine
-mino/src/core_mino.h
+mino/dist/
 
 # OS noise
 .DS_Store

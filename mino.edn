@@ -1,0 +1,20 @@
+;; mino dogfoods itself: the examples build through `./mino/mino task
+;; build`, not a Makefile.
+;;
+;; First-time bootstrap (once, to produce the mino binary and its
+;; bundled headers): `cd mino && make`. After that, every build goes
+;; through the task runner, which materializes the mino amalgamation
+;; (mino/dist/mino.{c,h,hpp}) and compiles every example against it.
+
+{:paths ["lib" "mino/lib" "mino"]
+ :tasks
+ {build          {:doc  "Build all examples (C and C++) against the mino amalgamation"
+                  :task mino-examples.tasks/build}
+  test-use-cases {:doc  "Build and run the use-case examples"
+                  :deps [build]
+                  :task mino-examples.tasks/test-use-cases}
+  test           {:doc  "Alias for test-use-cases"
+                  :deps [build]
+                  :task mino-examples.tasks/test-use-cases}
+  clean          {:doc  "Remove built example binaries"
+                  :task mino-examples.tasks/clean}}}

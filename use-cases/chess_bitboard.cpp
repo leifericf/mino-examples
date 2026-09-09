@@ -22,9 +22,11 @@
  * engine would use them.
  *
  * Build:
- *   make
- *   c++ -std=c++17 -Imino/src -o use-cases/chess_bitboard \
- *       use-cases/chess_bitboard.cpp mino/src/[a-z]*.o -lm
+ *   ./mino/mino task build
+ *
+ * Or compile just this file against the mino amalgamation:
+ *   c++ -std=c++17 -Imino/dist -o use-cases/chess_bitboard \
+ *       use-cases/chess_bitboard.cpp mino/dist/mino.o -lm -lpthread
  */
 
 #include "mino.h"
