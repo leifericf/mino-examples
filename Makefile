@@ -2,29 +2,38 @@
 
 CC       ?= cc
 CXX      ?= c++
-MINO_INCS := -Imino/src -Imino/src/public -Imino/src/runtime \
-             -Imino/src/gc -Imino/src/eval -Imino/src/values \
-             -Imino/src/collections -Imino/src/prim -Imino/src/async \
-             -Imino/src/interop -Imino/src/diag -Imino/src/vendor/imath
+MINO_INCS := -Imino/src -Imino/src/generated -Imino/src/public \
+             -Imino/src/runtime -Imino/src/gc -Imino/src/eval \
+             -Imino/src/read -Imino/src/print -Imino/src/names \
+             -Imino/src/state -Imino/src/values -Imino/src/collections \
+             -Imino/src/prim -Imino/src/async -Imino/src/interop \
+             -Imino/src/diag -Imino/src/vendor/imath \
+             -Imino/src/vendor/bearssl -Imino/src/vendor/bearssl/inc \
+             -Imino/src/vendor/miniz -Imino/src/vendor/miniz/upstream
 CFLAGS   ?= -std=c99 -Wall -Wpedantic -Wextra -O2 $(MINO_INCS)
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 $(MINO_INCS)
 LDFLAGS  ?=
 LIBS     ?= -lm -lpthread
 
-MINO_SRCS := $(wildcard mino/src/public/*.c) \
-             $(wildcard mino/src/runtime/*.c) \
-             $(wildcard mino/src/gc/*.c) \
-             $(wildcard mino/src/eval/*.c) \
+MINO_SRCS := $(wildcard mino/src/eval/*.c) \
              $(wildcard mino/src/eval/bc/*.c) \
              $(wildcard mino/src/eval/bc/jit/*.c) \
+             $(wildcard mino/src/read/*.c) \
+             $(wildcard mino/src/print/*.c) \
+             $(wildcard mino/src/diag/*.c) \
+             $(wildcard mino/src/names/*.c) \
+             $(wildcard mino/src/state/*.c) \
+             $(wildcard mino/src/gc/*.c) \
+             $(wildcard mino/src/public/*.c) \
              $(wildcard mino/src/values/*.c) \
              $(wildcard mino/src/collections/*.c) \
-             $(wildcard mino/src/prim/*.c) \
-             $(wildcard mino/src/async/*.c) \
+             $(wildcard mino/src/prim/*/*.c) \
              $(wildcard mino/src/interop/*.c) \
              $(wildcard mino/src/regex/*.c) \
-             $(wildcard mino/src/diag/*.c) \
-             $(wildcard mino/src/vendor/imath/*.c)
+             $(wildcard mino/src/async/*.c) \
+             $(wildcard mino/src/vendor/imath/*.c) \
+             $(wildcard mino/src/vendor/bearssl/*.c) \
+             $(wildcard mino/src/vendor/miniz/*.c)
 MINO_OBJS := $(MINO_SRCS:.c=.o)
 
 # C examples
@@ -56,69 +65,14 @@ all: $(ALL_BINS)
 
 # --- Bundled-stdlib generated headers ---
 # install_stdlib.c #includes one C string-literal header per bundled
-# namespace; these are gitignored generated artifacts.
+# namespace under mino/src/generated/, driven by mino/src/bundled.list.
+# These are gitignored generated artifacts. Run `make -C mino` once to
+# emit them (a mino binary is linked as a harmless side effect).
 
-define gen-mino-header
-mino/src/$(2).h: mino/$(1)
-	@printf 'static const char *$(2)_src =\n' > $$@
-	@sed 's/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$$$$/\\n"/' $$< >> $$@
-	@printf '    ;\n' >> $$@
-endef
+MINO_GEN_HEADERS := $(wildcard mino/src/generated/*.h)
 
-$(eval $(call gen-mino-header,src/core.clj,core_mino))
-$(eval $(call gen-mino-header,lib/clojure/string.clj,lib_clojure_string))
-$(eval $(call gen-mino-header,lib/clojure/set.clj,lib_clojure_set))
-$(eval $(call gen-mino-header,lib/clojure/math.clj,lib_clojure_math))
-$(eval $(call gen-mino-header,lib/clojure/walk.clj,lib_clojure_walk))
-$(eval $(call gen-mino-header,lib/clojure/edn.clj,lib_clojure_edn))
-$(eval $(call gen-mino-header,lib/clojure/pprint.clj,lib_clojure_pprint))
-$(eval $(call gen-mino-header,lib/clojure/zip.clj,lib_clojure_zip))
-$(eval $(call gen-mino-header,lib/clojure/data.clj,lib_clojure_data))
-$(eval $(call gen-mino-header,lib/clojure/test.clj,lib_clojure_test))
-$(eval $(call gen-mino-header,lib/clojure/template.clj,lib_clojure_template))
-$(eval $(call gen-mino-header,lib/clojure/repl.clj,lib_clojure_repl))
-$(eval $(call gen-mino-header,lib/clojure/stacktrace.clj,lib_clojure_stacktrace))
-$(eval $(call gen-mino-header,lib/clojure/datafy.clj,lib_clojure_datafy))
-$(eval $(call gen-mino-header,lib/clojure/core/protocols.clj,lib_clojure_core_protocols))
-$(eval $(call gen-mino-header,lib/clojure/core/reducers.clj,lib_clojure_core_reducers))
-$(eval $(call gen-mino-header,lib/clojure/instant.clj,lib_clojure_instant))
-$(eval $(call gen-mino-header,lib/clojure/spec/alpha.clj,lib_clojure_spec_alpha))
-$(eval $(call gen-mino-header,lib/clojure/core/specs/alpha.clj,lib_clojure_core_specs_alpha))
-$(eval $(call gen-mino-header,lib/clojure/test/check/generators.clj,lib_clojure_test_check_generators))
-$(eval $(call gen-mino-header,lib/clojure/test/check/properties.clj,lib_clojure_test_check_properties))
-$(eval $(call gen-mino-header,lib/clojure/test/check.clj,lib_clojure_test_check))
-$(eval $(call gen-mino-header,lib/mino/deps.clj,lib_mino_deps))
-$(eval $(call gen-mino-header,lib/mino/tasks.clj,lib_mino_tasks))
-$(eval $(call gen-mino-header,lib/mino/tasks/builtin.clj,lib_mino_tasks_builtin))
-
-MINO_GEN_HEADERS := mino/src/core_mino.h \
-                    mino/src/lib_clojure_string.h \
-                    mino/src/lib_clojure_set.h \
-                    mino/src/lib_clojure_math.h \
-                    mino/src/lib_clojure_walk.h \
-                    mino/src/lib_clojure_edn.h \
-                    mino/src/lib_clojure_pprint.h \
-                    mino/src/lib_clojure_zip.h \
-                    mino/src/lib_clojure_data.h \
-                    mino/src/lib_clojure_test.h \
-                    mino/src/lib_clojure_template.h \
-                    mino/src/lib_clojure_repl.h \
-                    mino/src/lib_clojure_stacktrace.h \
-                    mino/src/lib_clojure_datafy.h \
-                    mino/src/lib_clojure_core_protocols.h \
-                    mino/src/lib_clojure_core_reducers.h \
-                    mino/src/lib_clojure_instant.h \
-                    mino/src/lib_clojure_spec_alpha.h \
-                    mino/src/lib_clojure_core_specs_alpha.h \
-                    mino/src/lib_clojure_test_check_generators.h \
-                    mino/src/lib_clojure_test_check_properties.h \
-                    mino/src/lib_clojure_test_check.h \
-                    mino/src/lib_mino_deps.h \
-                    mino/src/lib_mino_tasks.h \
-                    mino/src/lib_mino_tasks_builtin.h
-
-mino/src/prim/install.o: mino/src/prim/install.c mino/src/core_mino.h
-mino/src/prim/install_stdlib.o: mino/src/prim/install_stdlib.c $(MINO_GEN_HEADERS)
+mino/src/prim/core/install.o: mino/src/prim/core/install.c
+mino/src/prim/core/install_stdlib.o: mino/src/prim/core/install_stdlib.c $(MINO_GEN_HEADERS)
 
 # --- Build rules ---
 
