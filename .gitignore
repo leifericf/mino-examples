@@ -13,7 +13,6 @@ src/actor_scale_test
 src/actor_stress_test
 src/api_stress_test
 src/clone_test
-src/fault_inject_test
 src/integration_test
 src/interop_test
 src/ref_test
